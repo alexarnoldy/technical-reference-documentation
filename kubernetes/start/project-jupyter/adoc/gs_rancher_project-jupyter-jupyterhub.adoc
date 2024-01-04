@@ -82,12 +82,6 @@ include::./common_docinfo_vars.adoc[]
 // -
 // SUSE Components
 // -
-:scomp1-provider: SUSE
-:scomp1: SUSE component 1 - short name
-:scomp1-full: SUSE component 1 - long name
-:scomp1-version: SUSE component 1 - relevant versions
-:scomp1-website: SUSE component 1 - product website URL
-:scomp1-docs: SUSE component 1 - product documentation URL
 
 :rke2: RKE2
 :rke2-full: Rancher Kubernetes Engine 2
@@ -103,17 +97,33 @@ include::./common_docinfo_vars.adoc[]
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
 
+:longhorn-full: Longhorn
+:longhorn-url: https://longhorn.io/
+:longhorn-docs: https://longhorn.io/docs/latest
 
+:harvester-full: Harvester
+:harvester-url: https://www.rancher.com/index.php/products/harvester
+:harvester-docs: https://docs.harvesterhci.io/
 
 // -
 // Partner/Project Components
 // -
 :jupyterhub-provider: Project Jupyter
 :jupyterhub: JupyterHub
-:jupyterhub-full: JupyterHub
 :jupyterhub-version: 4.0.2
 :jupyterhub-website: https://jupyter.org/hub
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
+
+:jupyterlab-provider: Project Jupyter
+:jupyterlab: JupyterLab
+:jupyterlab-version: 4.0.9
+:jupyterlab-website: https://jupyter.org/
+:jupyterlab-docs: https://jupyterlab.readthedocs.io/en/latest/
+
+:metallb: MetalLB
+:metallb-url: https://metallb.org/
+:metallb-docs: https://metallb.org/concepts/
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -138,13 +148,18 @@ include::./common_docinfo_vars.adoc[]
 //                            Rancher."
 //
 // -
-:usecase: (<55 characters) use case
 
-:description: (<150 characters) description
+:title: Deploy {jupyterhub} with {rancher-full}
 
-:description-short: (<55 characters) social media description
+:subtitle: Deploying {jupyterhub} with {rancher} using {longhorn} for highly available storage, {metallb} for load balancing, and {harvester} for compute virtualization.
 
-:executive-summary: (<300 characters) brief summary
+:usecase: provide access to {jupyterlab} to teams of Developers and Data Scientists
+
+:description: Deploy {jupyterhub} on {rke2} with {rancher-full}, {longhorn}, and {harvester}.
+
+:description-short: Deploy {jupyterhub} with {rancher-full}
+
+:executive-summary: Enable Developers and Data Scientists to take full advantage of {jupyterlab} from any device that provides a modern web browser.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -158,10 +173,16 @@ include::./common_docinfo_vars.adoc[]
 //   NOTE: To list additional authors or others on the cover page,
 //         you must edit the docinfo.xml file as well.
 // -
-:author1-firstname: first (given) name
-:author1-surname: surname
-:author1-jobtitle: job title
-:author1-orgname: organization affiliation
+:author1_firstname: Alex
+:author1_surname: Arnoldy
+:author1_jobtitle: Global Alliance Solutions Architect
+:author1_orgname: SUSE
+
+:editor1_firstname: Terry
+:editor1_surname: Smith
+:editor1_jobtitle: Director of Global Partner Solutions
+:editor1_orgname: SUSE
+
 //:author2-firstname: first (given) name
 //:contrib1-firstname: first (given) name
 //:editor1-firstname: first (given) name
