@@ -1,0 +1,371 @@
+:docinfo:
+include::./common_docinfo_vars.adoc[]
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// GENERAL COMMENTS
+//   - See the SUSE TRD Contributors Guide for detailed guidance:
+//     https://documentation.suse.com/trd/contributors/single-html/suse-trd_contrib-guide/
+//   - Keep in mind that this is a "getting started" guide.
+//   - Write to the audience you are trying to reach.
+//   - Add or remove sections and subsections as needed.
+// 
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// DOCUMENT ATTRIBUTES AND VARIABLES
+//
+// NOTES:
+// 1. Define and use document attributes or variables in this file.
+// 2. Update the docinfo.xml file if needed.
+//
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// ORGANIZATION
+//   Do NOT modify this section.
+// -
+:trd: Technical Reference Documentation
+:type: Getting Started
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT REVISION DATE
+//-
+:revision-date: YYYY-MM-DD
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT TITLE AND SUBTITLE
+//   Provide concise but descriptive title and subtitle.
+//   title - (<75 characters) concisely identify the guide.
+//           (e.g.: "Kubeflow with Rancher")
+//   subititle - (<75 characters) expound on the title.
+//               (e.g., "Deploying Kubeflow onto an RKE2 Cluster with Rancher")
+// -
+:title: (<75 characters) Your Guide Title
+:subtitle: (<75 characters) Your Guide Subtitle
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TECHNICAL COMPONENTS
+//   Identify the technical components featured in the guide.
+//   Use variables to store information about the solution components.
+//   This makes it much easier to update the document for future
+//   version upgrades, URL changes, etc.
+//
+//   Variable names follow a simple pattern:
+//   - for SUSE components: scompX[-MODIFIER]
+//   - for partner/project components: pcompX[-MODIFIER]
+//   where:
+//   - X is an integer starting from 1 for the primary component,
+//     2 for a secondary component, and so on.
+//   - -MODIFIER is text that identifies the stored information.
+//   Some -MODIFIER values include:
+//   - EMPTY: If the modifier is missing, the variable contains
+//     a short name for the component (e.g., 'SLES', 'Rancher Prime')
+//   - -full: Long name of the component
+//     (e.g., 'SUSE Linux Enterprise Server', 'Rancher Prime by SUSE')
+//   - -provider: Name of company or project providing the component
+//     (e.g., 'SUSE', 'HPE', 'Kubeflow', 'Veeam')
+//   - -version: Relevant product version (e.g., '15', '15SP5', '2.7')
+//     or versions (e.g., '15SP4, 15SP5', '15SP3+', '2.6+', '2.x')
+//   - -website: Product website (e.g., https://www.suse.com/products/server/)
+//   - -docs: Product documentation (e.g., https://documentation.suse.com/sles/)
+//
+//   You can create additional modifiers as needed.
+//  
+// -
+// SUSE Components
+// -
+:scomp1-provider: SUSE
+:scomp1: SUSE component 1 - short name
+:scomp1-full: SUSE component 1 - long name
+:scomp1-version: SUSE component 1 - relevant versions
+:scomp1-website: SUSE component 1 - product website URL
+:scomp1-docs: SUSE component 1 - product documentation URL
+
+:rke2: RKE2
+:rke2-full: Rancher Kubernetes Engine 2
+:rke2-url: https://www.suse.com/products/rancher-kubernetes-engine/
+:rke2-support-matrix: https://www.suse.com/suse-rke2/support-matrix/all-supported-versions/
+:rke2-docs: https://docs.rke2.io/
+:rke2-version: 1.25
+
+
+:rancher-full: Rancher by SUSE
+:rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
+:rancher-docs: https://ranchermanager.docs.rancher.com/
+:rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
+:rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
+
+
+
+// -
+// Partner/Project Components
+// -
+:jupyterhub-provider: Project Jupyter
+:jupyterhub: JupyterHub
+:jupyterhub-full: JupyterHub
+:jupyterhub-version: 4.0.2
+:jupyterhub-website: https://jupyter.org/hub
+:jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT DESCRIPTIONS
+//   Describe the guide by its purpose, use case, value.
+//
+// usecase: (<55 characters) key words or phrases that identify the
+//          use case of this guide
+//          (e.g.: "Database-as-a-Service", "edge analytics in healthcare",
+//                 "Kubernetes-native object storage")
+// description: (<150 characters) brief description of what this guide
+//              provides (e.g.: "Deploy Kubeflow with Rancher Primer")
+// description-short: (<55 characters) condensed description suitable for
+//                    social media (e.g.: "Kubeflow with Rancher")
+// executive-summary: (<300 characters) brief summary of the guide that
+//                    appears near the beginning of the rendered document
+//                    (e.g.: "Kubeflow simplifies deployment of machine
+//                            learning (ML) workflows on Kubernetes clusters.
+//                            This document provides step-by-step guidance
+//                            for deploying Kubeflow on an RKE2 cluster with
+//                            Rancher."
+//
+// -
+:usecase: (<55 characters) use case
+
+:description: (<150 characters) description
+
+:description-short: (<55 characters) social media description
+
+:executive-summary: (<300 characters) brief summary
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// CONTRIBUTORS
+//   Specify information about authors, editors, and other
+//   contributors here.
+//   Follow the pattern to provide fist name, surname, job title,
+//   and organization name for each contributor.
+//   NOTE: To list additional authors or others on the cover page,
+//         you must edit the docinfo.xml file as well.
+// -
+:author1-firstname: first (given) name
+:author1-surname: surname
+:author1-jobtitle: job title
+:author1-orgname: organization affiliation
+//:author2-firstname: first (given) name
+//:contrib1-firstname: first (given) name
+//:editor1-firstname: first (given) name
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// MISCELLANEOUS
+//   Define any additional variables here for use within the document.
+// -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+= {title}: {subtitle}
+
+
+
+== Introduction
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Provide a motivation for the document in 2-4 sentences to identify:
+//   - what the document is about
+//   - why it may be of interest to the reader
+//   - what products are being highlighted
+// Include an approved SUSE | Partner logo lock-up if possible
+// Include any additional, relevant details
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Your introduction and motivation for this guide
+
+
+
+=== Scope
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Specify what this guide covers in no more than 2 sentences.
+//   E.g., "You will learn how to ..."
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+The scope for your guide
+
+
+=== Audience
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Identify for whom this document is intended, perhaps with:
+//   - topics of interests (e.g., machine learning, security, etc.)
+//   - job roles (e.g., developer, administrator, platform architect, etc.)
+//   - required skills
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+The intended audience for your guide
+
+
+
+=== Acknowledgements
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Acknowledge contributors not listed as authors.
+// Something like:
+//   The authors wish to acknowledge the contributions of the following
+//   individuals:
+//   * {contrib1-firstname} {contrib1-surname}, {contrib1-jobtitle}, {contrib1-orgname}
+//   * {contrib2-firstname} {contrib2-surname}, {contrib2-jobtitle}, {contrib2-orgname}
+// NOTE: If there are none, comment out this section.
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Any acknowledgements you would like to make
+
+
+
+== Prerequisites
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Identify minimum requirements (prerequisites) the reader
+// would need in order to follow the steps of this guide.
+// - Use an unordered list.
+// - Link to existing resources whenever possible.
+// - Keep this section brief but elaborate as needed.
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+To complete the steps illustrated in this guide, you need the following resources:
+
+* Prerequisite 1
+
+* Prerequisite 2
+
+
+
+
+== Overview
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Provide an overview of the solution and the processes detailed
+// in this guide.
+// - Identify components
+// - Describe how the components fit together
+// - Leverage diagrams as appropriate, including (but not limited to):
+//   - component architecture
+//   - data flow diagram
+//   - workflow diagram
+// - Summarize the major steps the reader will perform
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+An overview of this guide
+
+
+
+
+== Installation
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Detail the steps of the installation procedure.
+// - The reader should be able to copy and paste commands to
+//   a local environment or follow along locally with screenshots.
+// - Be sure tp include verifications that the reader can use to
+//   validate that major steps were performed correctly.
+//
+// - Make use of:
+//   - Ordered lists
+//   - Code blocks
+//   - Screenshots
+//   - Admonitions
+//
+// - If multiple installation methods are to be detailed, then
+//   - Create a summary list here.
+//   - Detail each method in a subsection.
+//
+//   NOTE: For solutions involving SUSE Rancher, it is preferred
+//         to highlight installation through the Rancher Apps Catalog
+//         with appropriate screenshots and SUSE branding.
+//         Alternatively or additionally, installation via the
+//         command line can be documented.
+//
+// - Complex installations may be broken into one or more subsections.
+//
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Installation procedures
+
+
+
+
+== Demonstration
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Illustrate functionality of the solution for a use case.
+//
+// NOTE: This demonstration text could be used to script a
+//       demonstration video.
+//
+// - Typical demonstration flow is:
+//   1. Outline the demonstration.
+//   2. Prepare the environment.
+//      This should be minimal, such as downloading some data to use.
+//   3. Perform the demonstration.
+//   4. Do not overuse screenshots.
+//   5. Clean up the environment.
+//
+// - Make use of ordered lists, code blocks, admonitions, and screenshots.
+//
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+Demonstration or validation procedures
+
+
+
+== Summary
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Summarize:
+// - Motivation for the guide (1 sentence)
+// - What was covered (1-2 sentences)
+// - Next steps (unordered list of 2-4 further learning resources)
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Summary of this guide
+
+
+
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Do not modify below this break.
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+++++
+<?pdfpagebreak?>
+++++
+
+
+:leveloffset: 0
+
+== Legal notice
+include::common_trd_legal_notice.adoc[]
+
+++++
+<?pdfpagebreak?>
+++++
+
+
+:leveloffset: 0
+include::common_gfdl1.2_i.adoc[]
+
+//end
