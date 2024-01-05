@@ -124,6 +124,8 @@ include::./common_docinfo_vars.adoc[]
 :metallb-url: https://metallb.org/
 :metallb-docs: https://metallb.org/concepts/
 
+:k8s: Kubernetes
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -214,6 +216,10 @@ include::./common_docinfo_vars.adoc[]
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 Your introduction and motivation for this guide
+
+{jupyterlab} provides a flexible, interactive environment where you develop code, explore data, and build visualizations, all within a single interface. {jupyterlab} is perfect for individual research, learning, and prototyping. However, {jupyterlab} runs as a local application, requiring each user's time and knowledge to install and maintain it.
+
+{jupyterhub} provides all of the value of {jupyterlab}, from a centrally maintained {k8s} cluster. This removes the burden of installation and maintenance for the {jupyterlab} users, allowing them to get the full value of the tool from any device that provides a web browser. In addition {jupyterhub} fuels collaboration with the ability to work in individual or shared development environments, a powerful capability that isn't available to individual {jupyterlab} installations.  This guide shows you how to unlock the full potential of {jupyterhub} by deploying through Rancher by SUSE, enabling scalable deployments, centralized management, and enhanced security.
 
 
 
