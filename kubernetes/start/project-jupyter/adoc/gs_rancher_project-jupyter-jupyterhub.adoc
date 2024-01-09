@@ -256,9 +256,9 @@ In this guide we will cover:
 //   - required skills
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-This guide is intended for high technology professionals (including Kubernetes administrators, proficient MLOps practitioners, and application developers) seeking to unlock the full potential of their collaborative data science and development environment.
+This guide is intended for high technology professionals (including {k8s} administrators, proficient MLOps practitioners, and application developers) seeking to unlock the full potential of their collaborative data science and development environment.
 
-To be successful, you need a foundational understanding of Kubernetes, {rancher}, and {jupyterlab}.
+To be successful, you need a foundational understanding of {k8s}, {rancher}, and {jupyterlab}.
 
 
 === Acknowledgements
@@ -291,12 +291,21 @@ The author wants to acknowledge contributions to this guide by:
 // - Keep this section brief but elaborate as needed.
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-To complete the steps illustrated in this guide, you need the following resources:
+Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
-* Prerequisite 1
+. {rancher} installation*
+//
++
+{rancher} can be running in a public cloud provider or on-premises, but needs needs to have access to the infrastructure provider for the {rke2} cluster.
 
-* Prerequisite 2
-
+. A {harvester} cluster as the infrastructure provider for the {rke2} cluster.
+//
++
+[NOTE]
+====
+We have selected the {harvester} infrastructure provider because of its seamless integration with {rancher}, and its ability to provide a low-cost, cloud-like Infrastructure as a Service experience for its users. If you don't have a {harvester} cluster readily available, {rke2} can be deployed on another infrastructure provider, or a hosted {k8s} can be used.
+====
++
 
 
 
