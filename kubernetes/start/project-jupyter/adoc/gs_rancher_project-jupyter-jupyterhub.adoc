@@ -215,11 +215,15 @@ include::./common_docinfo_vars.adoc[]
 // Include any additional, relevant details
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Your introduction and motivation for this guide
 
-{jupyterlab} provides a flexible, interactive environment where you develop code, explore data, and build visualizations, all within a single interface. {jupyterlab} is perfect for individual research, learning, and prototyping. However, {jupyterlab} runs as a local application, requiring each user's time and knowledge to install and maintain it.
+{jupyterlab} provides a flexible, interactive environment where you develop code, explore data, and build visualizations, all within a single interface. 
+{jupyterlab} is perfect for individual research, learning, and prototyping. 
+However, {jupyterlab} runs as a local application, requiring each user's time and knowledge to install and maintain it.
 
-{jupyterhub} provides all of the value of {jupyterlab}, from a centrally maintained {k8s} cluster. This removes the burden of installation and maintenance for the {jupyterlab} users, allowing them to get the full value of the tool from any device that provides a web browser. In addition {jupyterhub} fuels collaboration with the ability to work in individual or shared development environments, a powerful capability that isn't available to individual {jupyterlab} installations.  This guide shows you how to unlock the full potential of {jupyterhub} by deploying through Rancher by SUSE, enabling scalable deployments, centralized management, and enhanced security.
+{jupyterhub} provides all of the value of {jupyterlab}, from a centrally maintained {k8s} cluster. 
+This removes the burden of installation and maintenance for the {jupyterlab} users, allowing them to get the full value of the tool from any device that provides a web browser. 
+In addition {jupyterhub} fuels collaboration with the ability to work in individual or shared development environments, a powerful capability that isn't available to individual {jupyterlab} installations.  
+This guide shows you how to unlock the full potential of {jupyterhub} by deploying through Rancher by SUSE, enabling scalable deployments, centralized management, and enhanced security. 
 
 
 
@@ -230,8 +234,18 @@ Your introduction and motivation for this guide
 //   E.g., "You will learn how to ..."
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-The scope for your guide
 
+In this guide we will cover:
+
+* creating a highly-available {rke2} cluster using {rancher} and {harvester}
+
+* installing {longhorn} with {rancher}
+
+* installing and configuring {metallb} with {rancher}
+
+* installing {jupyterhub} with static authentication for a handful of users
+
+* creating a sample workload in {jupyterhub} that demonstrates both private and collaborative workspaces
 
 === Audience
 
@@ -242,8 +256,9 @@ The scope for your guide
 //   - required skills
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-The intended audience for your guide
+This guide is intended for high technology professionals (including Kubernetes administrators, proficient MLOps practitioners, and application developers) seeking to unlock the full potential of their collaborative data science and development environment.
 
+To be successful, you need a foundational understanding of Kubernetes, {rancher}, and {jupyterlab}.
 
 
 === Acknowledgements
@@ -258,7 +273,11 @@ The intended audience for your guide
 // NOTE: If there are none, comment out this section.
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Any acknowledgements you would like to make
+The author wants to acknowledge contributions to this guide by:
+
+* {contrib1_firstname} {contrib1_surname}, {contrib1_orgname}, {contrib1_jobtitle}
+//* {contrib2_firstname} {contrib2_surname}, {contrib2_orgname}, {contrib2_jobtitle}
+* {editor1_firstname} {editor1_surname}, {editor1_orgname}, {editor1_jobtitle}
 
 
 
