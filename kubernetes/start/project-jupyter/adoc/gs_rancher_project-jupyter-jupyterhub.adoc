@@ -135,6 +135,8 @@ include::./common_docinfo_vars.adoc[]
 
 :k8s: Kubernetes
 
+:lets-encrypt: Let's Encrypt
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -323,9 +325,29 @@ If you don't have a {harvester} cluster readily available, {rke2} can be deploye
 The {metallb} load balancer needs at least three IP addresses dedicated to its operation. This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
 +
 
-. A publicly resolvable domain name
-//+
-You can easily obtain a domain name from most public DNS providers, for a small fee. You will need this for Let's Encrypt to verify your ownership of the {juypterhub} service and provide the required TLS certificates for HTTPS communication. See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
+. TLS certificate and private key
+//
++
+A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to {jupyterhub}. 
+This guide will include guidance for obtaining these pieces from {lets-encrypt}. 
+{lets-encrypt} will require that you possess the credentials to make changes to a publicly resolvable domain name.
++
+[NOTE]
+====
+While it is not recommended, this deployment can be completed with HTTP communication, sacrificing security for simplicity. 
+This should never be done in production, or otherwise valuable, environments.
+====
++
+[IMPORTANT]
+====
+It is out of the scope of this document to cover the process for providing TLS certificates from a private CA.
+====
+
+//. A publicly resolvable domain name
+////+
+//You can easily obtain a domain name from most public DNS providers, for a small fee. 
+//You will need this for Let's Encrypt to verify your ownership of the {juypterhub} service and provide the required TLS certificates for HTTPS communication. 
+//See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
 
 
 . Required software is installed on each node of the {rke2} cluster
