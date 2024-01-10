@@ -307,6 +307,11 @@ We have selected the {harvester} infrastructure provider because of its seamless
 ====
 +
 
+. Three or more available IP addresses
+//
++
+The {metallb} load balancer needs at least three IP addresses dedicated to its operation. This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
++
 
 
 == Overview
