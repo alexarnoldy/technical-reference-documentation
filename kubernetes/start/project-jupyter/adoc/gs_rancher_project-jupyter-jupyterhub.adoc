@@ -105,6 +105,15 @@ include::./common_docinfo_vars.adoc[]
 :harvester-url: https://www.rancher.com/index.php/products/harvester
 :harvester-docs: https://docs.harvesterhci.io/
 
+:sles: SLES
+:sles-full: SUSE Linux Enterprise Server
+:sles-version: 15
+:sles-sp: 5
+:sles-sp-full: SP{sles-sp}
+:sles-url: https://www.suse.com/products/server/
+:sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
+:sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
+
 // -
 // Partner/Project Components
 // -
@@ -303,7 +312,8 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 +
 [NOTE]
 ====
-We have selected the {harvester} infrastructure provider because of its seamless integration with {rancher}, and its ability to provide a low-cost, cloud-like Infrastructure as a Service experience for its users. If you don't have a {harvester} cluster readily available, {rke2} can be deployed on another infrastructure provider, or a hosted {k8s} can be used.
+We have selected the {harvester} infrastructure provider because of its seamless integration with {rancher}, and its ability to provide a low-cost, cloud-like Infrastructure as a Service experience for its users. 
+If you don't have a {harvester} cluster readily available, {rke2} can be deployed on another infrastructure provider, or a hosted {k8s} can be used.
 ====
 +
 
@@ -312,6 +322,25 @@ We have selected the {harvester} infrastructure provider because of its seamless
 +
 The {metallb} load balancer needs at least three IP addresses dedicated to its operation. This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
 +
+
+. A publicly resolvable domain name
+//+
+You can easily obtain a domain name from most public DNS providers, for a small fee. You will need this for Let's Encrypt to verify your ownership of the {juypterhub} service and provide the required TLS certificates for HTTPS communication. See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
+
+
+. Required software is installed on each node of the {rke2} cluster
+//
++
+Longhorn leverages several open source software projects, including open-iscsi and nfs-client, for core functionality. 
+You must ensure that each node in the {rke2} cluster meets link:https://longhorn.io/docs/1.5.3/deploy/install/#installation-requirements[these requirements].
+
+Most of the required software can be installed on {sles-full} can be installed with this command:
++
+[source, console]
+----
+sudo zypper in coreutils jq nfs-client util-linux open-iscsi
+----
+
 
 
 == Overview
