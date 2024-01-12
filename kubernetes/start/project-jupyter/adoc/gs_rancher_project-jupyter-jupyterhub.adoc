@@ -379,8 +379,16 @@ sudo zypper in coreutils jq nfs-client util-linux open-iscsi
 // - Summarize the major steps the reader will perform
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-An overview of this guide
-
+This Getting Started guide will help you build a production quality JupyterHub environment running on an {rke2} {k8s} cluster deployed on virtual machines provided by the {harvester} hypervisor. 
+We'll navigate the journey step-by-step, covering:
+//
++
+* Deploying {rke2-full} on {harvester}: You'll leverage {rancher-full} for {k8s} application and cluster management. 
+You'll deploy {longhorn} for highly available, persistent storage.
++
+* Configuring {metallb}: This versatile load balancer provides virtual IP addresses that ensures traffic to your {jupyterlab} server instances isn't interrupted, even after a node failure.
++
+* Installing {juypterhub}: Using its Helm chart, we'll seamlessly integrate {juypterhub} within your RKE2 cluster, equipping you with a dynamic platform for interactive data analysis and collaboration.
 
 
 
