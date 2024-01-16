@@ -88,7 +88,7 @@ include::./common_docinfo_vars.adoc[]
 :rke2-url: https://www.suse.com/products/rancher-kubernetes-engine/
 :rke2-support-matrix: https://www.suse.com/suse-rke2/support-matrix/all-supported-versions/
 :rke2-docs: https://docs.rke2.io/
-:rke2-version: 1.25
+:rke2-version: v1.27.8+rke2r1
 
 
 :rancher-full: Rancher by SUSE
@@ -97,12 +97,13 @@ include::./common_docinfo_vars.adoc[]
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
 
-:longhorn-full: Longhorn
+:longhorn: Longhorn
 :longhorn-url: https://longhorn.io/
 :longhorn-docs: https://longhorn.io/docs/latest
 
-:harvester-full: Harvester
+:harvester: Harvester
 :harvester-url: https://www.rancher.com/index.php/products/harvester
+:harvester-version: v1.3
 :harvester-docs: https://docs.harvesterhci.io/
 
 :sles: SLES
@@ -134,7 +135,8 @@ include::./common_docinfo_vars.adoc[]
 :metallb-docs: https://metallb.org/concepts/
 
 :k8s: Kubernetes
-
+:k8s-version: 1.27
+:harvester-cloud-creds-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster#create-your-cloud-credentials
 :lets-encrypt: Let's Encrypt
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -309,7 +311,10 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 +
 {rancher} can be running in a public cloud provider or on-premises, but needs needs to have access to the infrastructure provider for the {rke2} cluster.
 
-. A {harvester} cluster as the infrastructure provider for the {rke2} cluster.
+. A {harvester} cluster 
+//
++
+{harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. See {harvester-cloud-creds-url} for more information.
 //
 +
 [NOTE]
@@ -346,7 +351,7 @@ It is out of the scope of this document to cover the process for providing TLS c
 //. A publicly resolvable domain name
 ////+
 //You can easily obtain a domain name from most public DNS providers, for a small fee. 
-//You will need this for Let's Encrypt to verify your ownership of the {juypterhub} service and provide the required TLS certificates for HTTPS communication. 
+//You will need this for Let's Encrypt to verify your ownership of the {jupyterhub} service and provide the required TLS certificates for HTTPS communication. 
 //See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
 
 
@@ -384,15 +389,54 @@ We'll navigate the journey step-by-step, covering:
 //
 +
 * Deploying {rke2-full} on {harvester}: You'll leverage {rancher-full} for {k8s} application and cluster management. 
-You'll deploy {longhorn} for highly available, persistent storage.
++
+* Configuring {longhorn} for for highly available, persistent storage.
 +
 * Configuring {metallb}: This versatile load balancer provides virtual IP addresses that ensures traffic to your {jupyterlab} server instances isn't interrupted, even after a node failure.
 +
-* Installing {juypterhub}: Using its Helm chart, we'll seamlessly integrate {juypterhub} within your RKE2 cluster, equipping you with a dynamic platform for interactive data analysis and collaboration.
+* Installing {jupyterhub}: Using its Helm chart, we'll seamlessly integrate {jupyterhub} within your RKE2 cluster, equipping you with a dynamic platform for interactive data analysis and collaboration.
 
+== Configure {harvester} to deploy properly configured virtual machines
 
+Download SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2 image  at https://www.suse.com/download/sles/ (may need to log in or create a free account)
 
-== Installation
+Upload the image IAW https://docs.harvesterhci.io/v1.3/upload-image
+
+Create an RKE2 cluster IAW https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
+
+For the purposes of this project, the following `User Data` was used:
++
+[NOTE]
+====
+You can change the root and sles user password, if you prefer.
+====
++
+[source, console, subs="attributes+"]
+----
+### cloud-init
+#cloud-config
+chpasswd:
+  list: |
+    root:SUSE
+    sles:SUSE
+  expire: false
+runcmd:
+  - SUSEConnect --url http://rmt.stable.suse.lab
+  - SUSEConnect -p sle-module-containers/{sles-version}.{sles-sp}/x86_64
+  - zypper -n in -t pattern apparmor
+  - zypper -n in iptables
+  - zypper -n up
+  - zypper in --force-resolution --no-confirm --force kernel-default
+----
+
+[TIP]
+====
+This `User Data` can also be configured as a Cloud Config Template in the {harvester} UI. See the link:https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration[{harvester} documentation] for more information.
+====
+
+Under `Cluster Configuration`, select the `Kuberntes Version` of :rke2-version:
+
+== Deploying {rke2-full} on {harvester}
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
@@ -421,7 +465,7 @@ You'll deploy {longhorn} for highly available, persistent storage.
 //
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Installation procedures
+You'll use the {rancher-full} interface to create the {rke2} cluster on {harvester}. 
 
 
 
