@@ -106,14 +106,23 @@ include::./common_docinfo_vars.adoc[]
 :harvester-version: v1.3
 :harvester-docs: https://docs.harvesterhci.io/
 
+:harvester-upload-image-url: https://docs.harvesterhci.io/v1.3/upload-image
+:harvester-create-rke2-cluster-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
+:harevester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
+:harvester-namespace: default
+
 :sles: SLES
 :sles-full: SUSE Linux Enterprise Server
+:sles-minimal: SLES Minimal Cloud
 :sles-version: 15
 :sles-sp: 5
 :sles-sp-full: SP{sles-sp}
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
 :sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
+:sles-minimal-download-url: https://www.suse.com/download/sles/
+:sles-minimal-file-name: SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2
+:sles-minimal-saved-name: sles-{sles-version}-{sles-sp}-minimal
 
 // -
 // Partner/Project Components
@@ -398,17 +407,41 @@ We'll navigate the journey step-by-step, covering:
 
 == Configure {harvester} to deploy properly configured virtual machines
 
-Download SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2 image  at https://www.suse.com/download/sles/ (may need to log in or create a free account)
+Download {sles-minimal-file-name} image from link:{sles-minimal-download-url}[this URL] (You may need to log in or create a free account).
 
-Upload the image IAW https://docs.harvesterhci.io/v1.3/upload-image
+Following link:{harvester-upload-image-url}[these instructions], upload the {sles-minimal} image to {harvester}
++
+[NOTE] 
+====
+In uploading the {sles-minimal} image to {harvester}, we used these parameters:
+* Namespace: `{harvester-namespace}`
+* Name: `{sles-minimal-saved-name}`
+====
 
-Create an RKE2 cluster IAW https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
+== Deploying {rke2-full} on {harvester}
+
+Create an {rke2} cluster IAW {harvester-create-rke2-cluster-url}
+
+[NOTE]
+====
+In creating the {rke2} cluster, we have used these parameters:
+
+* Cluster Name: `jupyterhub`
+* Namespace: `Default`
+* Image: <
+====
 
 For the purposes of this project, the following `User Data` was used:
 +
 [NOTE]
 ====
 You can change the root and sles user password, if you prefer.
+====
++
+[IMPORTANT]
+====
+Update only one the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL, or with a subscription code (i.e. regcode). 
+Be sure to remove the other command.
 ====
 +
 [source, console, subs="attributes+"]
@@ -421,8 +454,9 @@ chpasswd:
     sles:SUSE
   expire: false
 runcmd:
-  - SUSEConnect --url http://rmt.stable.suse.lab
-  - SUSEConnect -p sle-module-containers/{sles-version}.{sles-sp}/x86_64
+#  - SUSEConnect --url http://rmt.example.com
+#  - SUSEConnect --regcode MyActivationCode --email MyEmailAddress
+#  - SUSEConnect -p sle-module-containers/{sles-version}.{sles-sp}/x86_64   ## Can likely be removed. Need to test.
   - zypper -n in -t pattern apparmor
   - zypper -n in iptables
   - zypper -n up
@@ -431,12 +465,11 @@ runcmd:
 
 [TIP]
 ====
-This `User Data` can also be configured as a Cloud Config Template in the {harvester} UI. See the link:https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration[{harvester} documentation] for more information.
+This `User Data` can also be configured as a Cloud Config Template in the {harvester} UI. 
+See the link:{harevester-cloud-configuration-url}[{harvester} documentation] for more information.
 ====
 
 Under `Cluster Configuration`, select the `Kuberntes Version` of :rke2-version:
-
-== Deploying {rke2-full} on {harvester}
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
