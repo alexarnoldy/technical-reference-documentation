@@ -110,6 +110,7 @@ include::./common_docinfo_vars.adoc[]
 :harvester-create-rke2-cluster-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
 :harevester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
 :harvester-namespace: default
+:harvester-cloud-config-template-name: rke2-ready
 
 :sles: SLES
 :sles-full: SUSE Linux Enterprise Server
@@ -424,6 +425,11 @@ Create a `Cloud Config Template` based on link:{harevester-cloud-configuration-u
 +
 [NOTE]
 ====
+For this procedure, we have named this Cloud Configuration Template {harvester-cloud-config-template-name}
+====
++
+[NOTE]
+====
 You can change the root and sles user password, if you prefer.
 ====
 +
@@ -458,7 +464,9 @@ Follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to
 
 [NOTE]
 ====
-In creating the {rke2} cluster, we have used these parameters:
+In creating the {rke2} cluster, we have used these specific parameters:
+
+*Machine Pools*
 
 * Cluster Name: `jupyterhub`
 * Machine Count: `3`
@@ -469,11 +477,18 @@ In creating the {rke2} cluster, we have used these parameters:
 * SSH User: `sles`
 * Image: {sles-minimal-saved-name}
 * Network: (Select a network to which all {jupyterlab} clients can connect)
-* Under "Show Advanced" -> "User Data:"
+
+*Under "Show Advanced"* 
+
+*User Data* 
+* User Data Template: {harvester-cloud-config-template-name}
+* Select the checkbox for `Install guest agent`
+
+*Cluster Configuration*
+
+* Kubernetes Version: {rke2-version}
 ====
 
-
-Under `Cluster Configuration`, select the `Kubernetes Version` of :rke2-version:
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
