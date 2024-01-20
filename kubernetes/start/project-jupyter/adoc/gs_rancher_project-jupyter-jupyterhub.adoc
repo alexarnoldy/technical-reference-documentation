@@ -133,6 +133,8 @@ include::./common_docinfo_vars.adoc[]
 :jupyterhub-website: https://jupyter.org/hub
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
 
+:jupyterhub-deployed-name: jupyterhub
+
 :jupyterlab-provider: Project Jupyter
 :jupyterlab: JupyterLab
 :jupyterlab-version: 4.0.9
@@ -408,7 +410,7 @@ We'll navigate the journey step-by-step, covering:
 == Configure {harvester} to deploy properly configured virtual machines
 
 Download {sles-minimal-file-name} image from link:{sles-minimal-download-url}[this URL] (You may need to log in or create a free account).
-
++
 Following link:{harvester-upload-image-url}[these instructions], upload the {sles-minimal} image to {harvester}
 +
 [NOTE] 
@@ -418,20 +420,7 @@ In uploading the {sles-minimal} image to {harvester}, we used these parameters:
 * Name: `{sles-minimal-saved-name}`
 ====
 
-== Deploying {rke2-full} on {harvester}
-
-Create an {rke2} cluster IAW {harvester-create-rke2-cluster-url}
-
-[NOTE]
-====
-In creating the {rke2} cluster, we have used these parameters:
-
-* Cluster Name: `jupyterhub`
-* Namespace: `Default`
-* Image: <
-====
-
-For the purposes of this project, the following `User Data` was used:
+Create a `Cloud Config Template` based on link:{harevester-cloud-configuration-url}[these instructions].
 +
 [NOTE]
 ====
@@ -463,13 +452,28 @@ runcmd:
   - zypper in --force-resolution --no-confirm --force kernel-default
 ----
 
-[TIP]
+== Deploying {rke2-full} on {harvester}
+
+Follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to create an {rke2} cluster using {rancher} and {harvester}.
+
+[NOTE]
 ====
-This `User Data` can also be configured as a Cloud Config Template in the {harvester} UI. 
-See the link:{harevester-cloud-configuration-url}[{harvester} documentation] for more information.
+In creating the {rke2} cluster, we have used these parameters:
+
+* Cluster Name: `jupyterhub`
+* Machine Count: `3`
+* Roles: `etcd`, `Control Plane`, and `Worker`
+* CPUs (per node): `8` (4 can be used for smaller deployments)
+* Memory (per node): `16` (8 can be used for smaller deployments)
+* Namespace: `{harvester-namespace}`
+* SSH User: `sles`
+* Image: {sles-minimal-saved-name}
+* Network: (Select a network to which all {jupyterlab} clients can connect)
+* Under "Show Advanced" -> "User Data:"
 ====
 
-Under `Cluster Configuration`, select the `Kuberntes Version` of :rke2-version:
+
+Under `Cluster Configuration`, select the `Kubernetes Version` of :rke2-version:
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
