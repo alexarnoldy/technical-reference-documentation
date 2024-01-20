@@ -100,6 +100,8 @@ include::./common_docinfo_vars.adoc[]
 :longhorn: Longhorn
 :longhorn-url: https://longhorn.io/
 :longhorn-docs: https://longhorn.io/docs/latest
+:longhorn-installation-doc: https://ranchermanager.docs.rancher.com/integrations-in-rancher/longhorn/overview#installing-longhorn-with-rancher
+
 
 :harvester: Harvester
 :harvester-url: https://www.rancher.com/index.php/products/harvester
@@ -489,7 +491,21 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Kubernetes Version: {rke2-version}
 ====
 
+== Deploying {longhorn} on {rke2-full} 
 
+Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
++
+[TIP]
+====
+It is beyond the scope of this document to manage the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described link:https://longhorn.io/docs/1.5.3/deploy/install/#using-the-environm
+ent-check-script[in this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
+====
++
+[NOTE]
+====
+In deploying {longhorn}, we have used these specific parameters:
+
+====
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
 // - The reader should be able to copy and paste commands to
