@@ -90,7 +90,7 @@ include::./common_docinfo_vars.adoc[]
 :rke2-docs: https://docs.rke2.io/
 :rke2-version: v1.27.8+rke2r1
 
-
+:rancher: Rancher
 :rancher-full: Rancher by SUSE
 :rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
 :rancher-docs: https://ranchermanager.docs.rancher.com/
@@ -101,6 +101,7 @@ include::./common_docinfo_vars.adoc[]
 :longhorn-url: https://longhorn.io/
 :longhorn-docs: https://longhorn.io/docs/latest
 :longhorn-installation-doc: https://ranchermanager.docs.rancher.com/integrations-in-rancher/longhorn/overview#installing-longhorn-with-rancher
+:longhorn-env-check-script-doc: https://longhorn.io/docs/latest/deploy/install/#using-the-environment-check-script
 
 
 :harvester: Harvester
@@ -320,7 +321,7 @@ The author wants to acknowledge contributions to this guide by:
 
 Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
-. {rancher} installation*
+.*{rancher} installation*
 //
 +
 {rancher} can be running in a public cloud provider or on-premises, but needs needs to have access to the infrastructure provider for the {rke2} cluster.
@@ -338,13 +339,13 @@ If you don't have a {harvester} cluster readily available, {rke2} can be deploye
 ====
 +
 
-. Three or more available IP addresses
+.*Three or more available IP addresses*
 //
 +
 The {metallb} load balancer needs at least three IP addresses dedicated to its operation. This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
 +
 
-. TLS certificate and private key
+.*TLS certificate and private key*
 //
 +
 A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to {jupyterhub}. 
@@ -363,19 +364,25 @@ It is out of the scope of this document to cover the process for providing TLS c
 ====
 
 //. A publicly resolvable domain name
-////+
+//
 //You can easily obtain a domain name from most public DNS providers, for a small fee. 
 //You will need this for Let's Encrypt to verify your ownership of the {jupyterhub} service and provide the required TLS certificates for HTTPS communication. 
 //See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
 
 
-. Required software is installed on each node of the {rke2} cluster
+.*Required software is installed on each node of the {rke2} cluster*
 //
++
+[NOTE]
+====
+This requirement can only be completed after the {rke2} cluster has been deployed. 
+After deploying the {rke2} cluster, you can return here to complete this step.
+====
 +
 Longhorn leverages several open source software projects, including open-iscsi and nfs-client, for core functionality. 
 You must ensure that each node in the {rke2} cluster meets link:https://longhorn.io/docs/1.5.3/deploy/install/#installation-requirements[these requirements].
-
-Most of the required software can be installed on {sles-full} can be installed with this command:
++
+Most of the required software can be installed on {sles-full} with this command:
 +
 [source, console]
 ----
@@ -432,7 +439,7 @@ For this procedure, we have named this Cloud Configuration Template {harvester-c
 +
 [NOTE]
 ====
-You can change the root and sles user password, if you prefer.
+You can use a more secure password for the root and sles users if you prefer.
 ====
 +
 [IMPORTANT]
@@ -484,7 +491,7 @@ In creating the {rke2} cluster, we have used these specific parameters:
 
 *User Data* 
 * User Data Template: {harvester-cloud-config-template-name}
-* Select the checkbox for `Install guest agent`
+* Check the `Install guest agent` checkbox.
 
 *Cluster Configuration*
 
@@ -493,19 +500,42 @@ In creating the {rke2} cluster, we have used these specific parameters:
 
 == Deploying {longhorn} on {rke2-full} 
 
+[IMPORTANT]
+====
+Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section before preceding with the installation of {longhorn}
+
 Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
+====
 +
 [TIP]
 ====
-It is beyond the scope of this document to manage the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described link:https://longhorn.io/docs/1.5.3/deploy/install/#using-the-environm
-ent-check-script[in this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
+It is beyond the scope of this document to manage the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
 ====
 +
 [NOTE]
 ====
-In deploying {longhorn}, we have used these specific parameters:
+In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
+This will suit our needs but will sacrifice higher data redundancy.
+To configure this, we have used these specific parameters:
 
+* Install into Project: System
+
+*Longhorn Default Settings*
+
+* Check the `Customize Default Settings` checkbox
+* Default Replica Count: `2`
+
+*Longhorn Storage Class Settings*
+
+* Default Storage Class Replica Count: `2`
+
+*Services and Load Balancing*
+
+* (Optional) Longhorn UI Service: LoadBalancer
 ====
+
+
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
 // - The reader should be able to copy and paste commands to
