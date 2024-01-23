@@ -439,7 +439,7 @@ For this procedure, we have named this Cloud Configuration Template {harvester-c
 +
 [NOTE]
 ====
-You can use a more secure password for the root and sles users if you prefer.
+If you prefer, configure a more secure password for the root and sles users.
 ====
 +
 [IMPORTANT]
@@ -498,11 +498,29 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Kubernetes Version: {rke2-version}
 ====
 
+After the {rke2} cluster has been deployed, its status will become "Active". 
+This can take five to ten minutes, depending on the underlying infrastructure. 
+
+Please continue this procedure only after its status shows "Active".
+
+== Deploying {metallb} on {rke2-full}
+
+[IMPORTANT]
+====
+Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section before preceding with the installation of {metallb}.
+====
+
+Installing {metallb} is accomplished in two, main steps.
+First, you will deploy the {metallb} Helm chart from inside {rancher}.
+Then, you will provide {metallb} with the virtual IP addresses dedicated for its use.
+Finally, you will validate that {metallb} is providing virtual IP addresses to applications upon request.
+
+
 == Deploying {longhorn} on {rke2-full} 
 
 [IMPORTANT]
 ====
-Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section before preceding with the installation of {longhorn}
+Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section before preceding with the installation of {longhorn}.
 
 Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
 ====
