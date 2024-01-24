@@ -557,7 +557,7 @@ There are many ways to specify the desired IP address range. See the link:{metal
 +
 [source, console, subs="attributes+"]
 ----
-cat <<EOF | kubectl apply -f-
+kubectl apply -f - <<EOF  
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
@@ -582,7 +582,7 @@ EOF
 +
 [source, console, subs="attributes+"]
 ----
-cat <<EOF | kubectl apply -f-
+kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -648,7 +648,7 @@ curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
 kubectl delete -f metallb-test.yaml -n 
 ----
 
-Close the {rancher-kubectl-shell} and move on to the next step of this procedure
+Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
 
 
 == Deploying {longhorn} on {rke2-full} 
@@ -662,7 +662,7 @@ Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy 
 +
 [TIP]
 ====
-It is beyond the scope of this document to manage the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
+It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
 ====
 +
 [NOTE]
