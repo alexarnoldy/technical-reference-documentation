@@ -587,6 +587,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -609,6 +610,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx
+  namespace: default
 spec:
   ports:
   - name: http
@@ -621,7 +623,33 @@ spec:
 EOF
 ----
 +
-.. 
+.. Verify the deployment has a running pod and the service has an "EXTERNAL-IP"
++
+[source, console, subs="attributes+"]
+----
+kubectl get deploy,svc -n default 
+----
++
+.. Test that the service is reachable through the load balancer IP address
++
+[source, console, subs="attributes+"]
+----
+kubectl get svc -n default | grep -w nginx > /tmp/externalip
+read -r a b c EXTERNAL_IP e f < /tmp/externalip
+curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
+----
++
+... An HTML encoded output should be displayed that includes the phrase "Thank you for using nginx."
++
+. When finished with testing, delete the pod and service 
++
+[source, console, subs="attributes+"]
+----
+kubectl delete -f metallb-test.yaml -n 
+----
+
+Close the {rancher-kubectl-shell} and move on to the next step of this procedure
+
 
 == Deploying {longhorn} on {rke2-full} 
 
