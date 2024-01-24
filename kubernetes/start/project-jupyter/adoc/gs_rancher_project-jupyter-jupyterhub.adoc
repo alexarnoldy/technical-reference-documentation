@@ -96,6 +96,7 @@ include::./common_docinfo_vars.adoc[]
 :rancher-docs: https://ranchermanager.docs.rancher.com/
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
+:rancher-kubectl-shell: Kubectl Shell
 
 :longhorn: Longhorn
 :longhorn-url: https://longhorn.io/
@@ -148,6 +149,8 @@ include::./common_docinfo_vars.adoc[]
 :metallb: MetalLB
 :metallb-url: https://metallb.org/
 :metallb-docs: https://metallb.org/concepts/
+:metallb-version: 0.13.12
+:metallb-ipaddress-config-url: https://metallb.org/configuration/#defining-the-ips-to-assign-to-the-load-balancer-services
 
 :k8s: Kubernetes
 :k8s-version: 1.27
@@ -515,6 +518,110 @@ First, you will deploy the {metallb} Helm chart from inside {rancher}.
 Then, you will provide {metallb} with the virtual IP addresses dedicated for its use.
 Finally, you will validate that {metallb} is providing virtual IP addresses to applications upon request.
 
+Deploy the {metallb} load balancer based on the following instructions:
++
+. From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
+. From the menu on the left, select `Apps`
+. In the `Filter` field, type {metallb} and select the {metallb} {rancher} chart
++
+[NOTE]
+====
+The version used for this project is {metallb-version}.
+====
++
+. Click `Install`
+. For the `Install into Project` option, select `System`, then click `Next`
+. Click `Install`
++
+[TIP]
+====
+After the message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
+====
++
+. Add the dedicated IP address configuration to {metallb}:
+.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+.. When the {rancher-kubectl-shell} is ready, create these shell variables:
++
+[source, console, subs="attributes+"]
+----
+export IP_RANGE_START=
+export IP_RANGE_END=
+----
++
+[TIP]
+====
+There are many ways to specify the desired IP address range. See the link:{metallb-ipaddress-config-url}[{metallb} documentation] for more information.
+====
++
+.. Paste this command into the {rancher-kubectl-shell}:
++
+[source, console, subs="attributes+"]
+----
+cat <<EOF | kubectl apply -f-
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - ${IP_RANGE_START}-${IP_RANGE_END}
+
+---
+
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: all-pools
+  namespace: metallb-system
+EOF
+----
++
+. Validate that {metallb} provides an IP address to an application when called upon:
+.. Paste this command into the {rancher-kubectl-shell}:
++
+[source, console, subs="attributes+"]
+----
+cat <<EOF | kubectl apply -f-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1
+        ports:
+        - name: http
+          containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: nginx
+  type: LoadBalancer
+EOF
+----
++
+.. 
 
 == Deploying {longhorn} on {rke2-full} 
 
