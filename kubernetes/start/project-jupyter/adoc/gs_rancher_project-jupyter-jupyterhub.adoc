@@ -521,7 +521,7 @@ Finally, you will validate that {metallb} is providing virtual IP addresses to a
 Deploy the {metallb} load balancer based on the following instructions:
 +
 . From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
-. From the menu on the left, select `Apps`
+. From the menu on the left select `Apps`, then `Charts`
 . In the `Filter` field, type {metallb} and select the {metallb} {rancher} chart
 +
 [NOTE]
@@ -535,7 +535,7 @@ The version used for this project is {metallb-version}.
 +
 [TIP]
 ====
-After the message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
+After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
 ====
 +
 . Add the dedicated IP address configuration to {metallb}:
@@ -662,13 +662,15 @@ Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy 
 +
 [TIP]
 ====
-It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl). However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained there within to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
+It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
+However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
 ====
 +
 [NOTE]
 ====
 In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
 This will suit our needs but will sacrifice higher data redundancy.
+
 To configure this, we have used these specific parameters:
 
 * Install into Project: System
@@ -687,7 +689,22 @@ To configure this, we have used these specific parameters:
 * (Optional) Longhorn UI Service: LoadBalancer
 ====
 
+[TIP]
+====
+After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with this procedure.
+====
 
+.Finish configuring {longhorn} and verify proper functionality
+
+. From the menu on the left, select `Storage`, then `StorageClasses`
+.. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
+. Also under the `Storage` menu item, select `PersistentVolumeClaims`
+.. Click `Create`
+.. Provide any name such as `test`
+.. Ensure the `Storage Class` dropdown says `Use the default class` 
+.. Click `Create`
+.. After a few seconds the new PVC should change from `Pending` to `Bound`
+.. Check the checkbox next to the new PVC, then click `Delete`
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
