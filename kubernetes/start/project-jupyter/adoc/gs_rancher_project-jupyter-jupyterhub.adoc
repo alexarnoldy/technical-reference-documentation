@@ -128,6 +128,7 @@ include::./common_docinfo_vars.adoc[]
 :sles-minimal-download-url: https://www.suse.com/download/sles/
 :sles-minimal-file-name: SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2
 :sles-minimal-saved-name: sles-{sles-version}-{sles-sp}-minimal
+:certbot-package-name: python3-certbot
 
 // -
 // Partner/Project Components
@@ -137,6 +138,7 @@ include::./common_docinfo_vars.adoc[]
 :jupyterhub-version: 4.0.2
 :jupyterhub-website: https://jupyter.org/hub
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
+:jupyterhub-installation-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html
 
 :jupyterhub-deployed-name: jupyterhub
 
@@ -155,7 +157,10 @@ include::./common_docinfo_vars.adoc[]
 :k8s: Kubernetes
 :k8s-version: 1.27
 :harvester-cloud-creds-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster#create-your-cloud-credentials
+
 :lets-encrypt: Let's Encrypt
+:public-domain-name: susealliances.com
+:public-fqdn: {jupyterhub-deployed-name}.{public-domain-name}
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -353,7 +358,7 @@ The {metallb} load balancer needs at least three IP addresses dedicated to its o
 +
 A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to {jupyterhub}. 
 This guide will include guidance for obtaining these pieces from {lets-encrypt}. 
-{lets-encrypt} will require that you possess the credentials to make changes to a publicly resolvable domain name.
+{lets-encrypt} will require that you possess the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain name with API credentials to add and remove records from it.
 +
 [NOTE]
 ====
@@ -365,7 +370,11 @@ This should never be done in production, or otherwise valuable, environments.
 ====
 It is out of the scope of this document to cover the process for providing TLS certificates from a private CA.
 ====
-
++
+One {sles} {sles-version} {sles-sp-full} system needs to have certbot installed on it to obtain the {lets-encrypt} TLS certificate.
+Install certbot with these commands: 
+. sudo SUSEConnect -p PackageHub/{sles-version}.{sles-sp}/x86_64
+. sudo zypper install {certbot-package-name}
 //. A publicly resolvable domain name
 //
 //You can easily obtain a domain name from most public DNS providers, for a small fee. 
@@ -655,10 +664,10 @@ Close the {rancher-kubectl-shell} and move on to the next step of this procedure
 
 [IMPORTANT]
 ====
-Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section before preceding with the installation of {longhorn}.
-
-Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
+Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {longhorn}.
 ====
++
+Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
 +
 [TIP]
 ====
@@ -705,6 +714,27 @@ After the final message `SUCCESS: helm upgrade --install=true...` is displayed, 
 .. Click `Create`
 .. After a few seconds the new PVC should change from `Pending` to `Bound`
 .. Check the checkbox next to the new PVC, then click `Delete`
+
+== Deploying {juypterhub} on {rke2-full}
+
+[IMPORTANT]
+====
+Be sure you have met the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {jupyterhub}.
+Specifically, you must possess a DNS domain registered with a public DNS provider. In this guide we will use the Fully Qualified Domain Name of {public-fqdn}
+====
+
+Follow the instructions at the link:{jupyterhub-installation-doc}[{jupyterhub} installation documentation] to install {jupyterhub} on {rke2} using its Helm chart
+
+[NOTE]
+====
+The instructions below will guide you through the process of creating a config.yaml file that will be required by the Helm installation command.
+====
+
+Create the config.yaml file that will contain the public TLS certificate and associated private key.
++
+. 
+
+
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
