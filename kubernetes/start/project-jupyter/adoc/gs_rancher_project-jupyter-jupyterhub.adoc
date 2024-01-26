@@ -128,8 +128,6 @@ include::./common_docinfo_vars.adoc[]
 :sles-minimal-download-url: https://www.suse.com/download/sles/
 :sles-minimal-file-name: SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2
 :sles-minimal-saved-name: sles-{sles-version}-{sles-sp}-minimal
-:certbot-package-name: python3-certbot
-
 // -
 // Partner/Project Components
 // -
@@ -162,6 +160,12 @@ include::./common_docinfo_vars.adoc[]
 :public-domain-name: susealliances.com
 :public-fqdn: {jupyterhub-deployed-name}.{public-domain-name}
 
+:certbot-name: certbot
+:certbot-package-name: python3-{certbot-name}
+:certbot-dns-plugin-url: https://eff-certbot.readthedocs.io/en/stable/using.html#dns-plugins
+
+:aws-name-full: Amazon Web Services
+:route53-name: Amazon Route 53
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -375,6 +379,34 @@ One {sles} {sles-version} {sles-sp-full} system needs to have certbot installed 
 Install certbot with these commands: 
 . sudo SUSEConnect -p PackageHub/{sles-version}.{sles-sp}/x86_64
 . sudo zypper install {certbot-package-name}
++
+Review the {certbot-name} information for link:{certbot-dns-plugin-url}[connecting to your DNS provider]
++
+[NOTE]
+====
+For this procedure we are using {route53-name} from {aws-name-full}.
+We will provide {certbot-name} with {route53-name} credentials through environmental variables.
+====
++
+. Switch to the root user account:
++
+[source, console, subs="attributes+"]
+----
+sudo -i
+----
++
+. Set the credential variables that can modify the DNS zone in {route53-name}, as well as the fully qualified domain name for {jupyterhub}
++
+[source, console, subs="attributes+"]
+----
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export FQDN="{}"
+----
++
+. 
+
+
 //. A publicly resolvable domain name
 //
 //You can easily obtain a domain name from most public DNS providers, for a small fee. 
