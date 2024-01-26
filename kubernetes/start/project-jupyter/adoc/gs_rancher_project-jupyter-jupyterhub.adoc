@@ -401,11 +401,21 @@ sudo -i
 ----
 export AWS_ACCESS_KEY_ID=""
 export AWS_SECRET_ACCESS_KEY=""
-export FQDN="{}"
+export FQDN="{public-fqdn}"
 ----
 +
-. 
-
+. Run {certbot-name} to generate the {lets-encrypt} TLS certifiate and associated private key
++
+[source, console, subs="attributes+"]
+----
+/usr/bin/certbot certonly --cert-name ${FQDN} --dns-route53 -d ${FQDN}
+----
++
+[NOTE]
+====
+The TLS certificate will be at {crt-path} /etc/letsencrypt/live/{public-fqdn}/fullchain.pem
+The private key will be at {key-path} /etc/letsencrypt/live/{public-fqdn}/privkey.pem
+====
 
 //. A publicly resolvable domain name
 //
