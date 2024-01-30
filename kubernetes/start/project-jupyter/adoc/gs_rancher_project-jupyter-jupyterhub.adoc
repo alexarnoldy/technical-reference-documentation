@@ -516,9 +516,11 @@ runcmd:
 #  - SUSEConnect --regcode MyActivationCode --email MyEmailAddress
 #  - SUSEConnect -p sle-module-containers/{sles-version}.{sles-sp}/x86_64   ## Can likely be removed. Need to test.
   - zypper -n in -t pattern apparmor
-  - zypper -n in iptables
+  - zypper -n in iptables coreutils jq nfs-client util-linux open-iscsi
   - zypper -n up
   - zypper in --force-resolution --no-confirm --force kernel-default
+  - systemctl enable iscsid
+  - systemctl start iscsid
 ----
 
 == Deploying {rke2-full} on {harvester}
@@ -544,7 +546,10 @@ In creating the {rke2} cluster, we have used these specific parameters:
 *Under "Show Advanced"* 
 
 *User Data* 
+
+* Uncheck the `Install guest agent` checkbox.
 * User Data Template: {harvester-cloud-config-template-name}
+** Ensure the cloud configuration template data shown is the same as you configured earlier
 * Check the `Install guest agent` checkbox.
 
 *Cluster Configuration*
@@ -552,10 +557,71 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Kubernetes Version: {rke2-version}
 ====
 
+[TIP]
+====
+When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you first unchecked that box, selected the correct user data, then checked that box again.
+====
+
 After the {rke2} cluster has been deployed, its status will become "Active". 
 This can take five to ten minutes, depending on the underlying infrastructure. 
 
 Please continue this procedure only after its status shows "Active".
+
+
+== Deploying {longhorn} on {rke2-full} 
+
+[IMPORTANT]
+====
+Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {longhorn}.
+====
++
+Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
++
+[TIP]
+====
+It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
+However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
+====
++
+[NOTE]
+====
+In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
+This will suit our needs but will sacrifice higher data redundancy.
+
+To configure this, we have used these specific parameters:
+
+* Install into Project: System
+
+*Longhorn Default Settings*
+
+* Check the `Customize Default Settings` checkbox
+* Default Replica Count: `2`
+
+*Longhorn Storage Class Settings*
+
+* Default Storage Class Replica Count: `2`
+
+*Services and Load Balancing*
+
+* (Optional) Longhorn UI Service: Rancher-Proxy
+====
+
+[TIP]
+====
+After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with this procedure.
+====
+
+.Finish configuring {longhorn} and verify proper functionality
+
+. From the menu on the left, select `Storage`, then `StorageClasses`
+.. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
+. Also under the `Storage` menu item, select `PersistentVolumeClaims`
+.. Click `Create`
+.. Provide any name such as `test`
+.. Ensure the `Storage Class` dropdown says `Use the default class` 
+.. Click `Create`
+.. After a few seconds the new PVC should change from `Pending` to `Bound`
+.. Check the checkbox next to the new PVC, then click `Delete`
 
 == Deploying {metallb} on {rke2-full}
 
@@ -654,6 +720,27 @@ spec:
         ports:
         - name: http
           containerPort: 80
+        volumeMounts:
+        - mountPath: /mnt/test-vol
+          name: test-vol
+      volumes:
+      - name: test-vol
+        persistentVolumeClaim:
+          claimName: nginx-pvc
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nginx-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 
 ---
 
@@ -674,11 +761,11 @@ spec:
 EOF
 ----
 +
-.. Verify the deployment has a running pod and the service has an "EXTERNAL-IP"
+.. Verify the pod is `Running`, the longhorn StorageClass is the `(default)``, the persistentvolumeclaim is `Bound`, and the service has an `EXTERNAL-IP`
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get deploy,svc -n default 
+kubectl get pod,sc,pvc,svc -n default 
 ----
 +
 .. Test that the service is reachable through the load balancer IP address
@@ -692,70 +779,16 @@ curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
 +
 ... An HTML encoded output should be displayed that includes the phrase "Thank you for using nginx."
 +
-. When finished with testing, delete the pod and service 
+. When finished with testing, delete the deployment and service 
 +
 [source, console, subs="attributes+"]
 ----
-kubectl delete -f metallb-test.yaml -n 
+kubectl delete deploy nginx -n default
+kubectl delete pvc nginx-pvc -n default
+kubectl delete service nginx -n default 
 ----
 
 Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
-
-
-== Deploying {longhorn} on {rke2-full} 
-
-[IMPORTANT]
-====
-Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {longhorn}.
-====
-+
-Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
-+
-[TIP]
-====
-It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
-However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
-====
-+
-[NOTE]
-====
-In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
-This will suit our needs but will sacrifice higher data redundancy.
-
-To configure this, we have used these specific parameters:
-
-* Install into Project: System
-
-*Longhorn Default Settings*
-
-* Check the `Customize Default Settings` checkbox
-* Default Replica Count: `2`
-
-*Longhorn Storage Class Settings*
-
-* Default Storage Class Replica Count: `2`
-
-*Services and Load Balancing*
-
-* (Optional) Longhorn UI Service: LoadBalancer
-====
-
-[TIP]
-====
-After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with this procedure.
-====
-
-.Finish configuring {longhorn} and verify proper functionality
-
-. From the menu on the left, select `Storage`, then `StorageClasses`
-.. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
-. Also under the `Storage` menu item, select `PersistentVolumeClaims`
-.. Click `Create`
-.. Provide any name such as `test`
-.. Ensure the `Storage Class` dropdown says `Use the default class` 
-.. Click `Create`
-.. After a few seconds the new PVC should change from `Pending` to `Bound`
-.. Check the checkbox next to the new PVC, then click `Delete`
 
 == Deploying {juypterhub} on {rke2-full}
 
