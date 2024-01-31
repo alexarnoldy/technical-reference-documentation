@@ -586,7 +586,7 @@ However, if you have a workstation that meets the requirements described in link
 [NOTE]
 ====
 In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
-This will suit our needs but will sacrifice higher data redundancy.
+This will suit our needs but will sacrifice higher data redundancy. The general guidance here is to use one or two volume replicas, but always one less than the number of nodes in the {rke2} cluster.
 
 To configure this, we have used these specific parameters:
 
@@ -596,6 +596,7 @@ To configure this, we have used these specific parameters:
 
 * Check the `Customize Default Settings` checkbox
 * Default Replica Count: `2`
+* Check the `Replica Node Level Soft Anti-Affinity`
 
 *Longhorn Storage Class Settings*
 
@@ -603,7 +604,7 @@ To configure this, we have used these specific parameters:
 
 *Services and Load Balancing*
 
-* (Optional) Longhorn UI Service: Rancher-Proxy
+* Longhorn UI Service: Rancher-Proxy
 ====
 
 [TIP]
@@ -615,6 +616,7 @@ After the final message `SUCCESS: helm upgrade --install=true...` is displayed, 
 
 . From the menu on the left, select `Storage`, then `StorageClasses`
 .. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
+////
 . Also under the `Storage` menu item, select `PersistentVolumeClaims`
 .. Click `Create`
 .. Provide any name such as `test`
@@ -622,6 +624,7 @@ After the final message `SUCCESS: helm upgrade --install=true...` is displayed, 
 .. Click `Create`
 .. After a few seconds the new PVC should change from `Pending` to `Bound`
 .. Check the checkbox next to the new PVC, then click `Delete`
+////
 
 == Deploying {metallb} on {rke2-full}
 
