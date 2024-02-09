@@ -164,6 +164,10 @@ include::./common_docinfo_vars.adoc[]
 :certbot-package-name: python3-{certbot-name}
 :certbot-dns-plugin-url: https://eff-certbot.readthedocs.io/en/stable/using.html#dns-plugins
 
+:cert-manager: cert-manager
+:cert-manager-docs: https://cert-manager.io/docs/
+:cert-manager-version: 1.13.3
+
 :aws-name-full: Amazon Web Services
 :route53-name: Amazon Route 53
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -375,6 +379,7 @@ This should never be done in production, or otherwise valuable, environments.
 It is out of the scope of this document to cover the process for providing TLS certificates from a private CA.
 ====
 +
+////
 One {sles} {sles-version} {sles-sp-full} system needs to have certbot installed on it to obtain the {lets-encrypt} TLS certificate.
 Install certbot with these commands: 
 . sudo SUSEConnect -p PackageHub/{sles-version}.{sles-sp}/x86_64
@@ -416,12 +421,13 @@ export FQDN="{public-fqdn}"
 The TLS certificate will be at {crt-path} /etc/letsencrypt/live/{public-fqdn}/fullchain.pem
 The private key will be at {key-path} /etc/letsencrypt/live/{public-fqdn}/privkey.pem
 ====
+////
 
-//. A publicly resolvable domain name
-//
-//You can easily obtain a domain name from most public DNS providers, for a small fee. 
-//You will need this for Let's Encrypt to verify your ownership of the {jupyterhub} service and provide the required TLS certificates for HTTPS communication. 
-//See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of DNS providers.
+. A publicly resolvable DNS domain name
+
+You can easily obtain a domain name from most public DNS providers, for a small fee. 
+You will need this for Let's Encrypt to verify your ownership of the {jupyterhub} service and provide the required TLS certificates for HTTPS communication. 
+See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of supported DNS providers.
 
 
 .*Required software is installed on each node of the {rke2} cluster*
@@ -514,7 +520,6 @@ chpasswd:
 runcmd:
 #  - SUSEConnect --url http://rmt.example.com
 #  - SUSEConnect --regcode MyActivationCode --email MyEmailAddress
-#  - SUSEConnect -p sle-module-containers/{sles-version}.{sles-sp}/x86_64   ## Can likely be removed. Need to test.
   - zypper -n in -t pattern apparmor
   - zypper -n in iptables coreutils jq nfs-client util-linux open-iscsi
   - zypper -n up
@@ -697,7 +702,7 @@ metadata:
 EOF
 ----
 +
-. Validate that {metallb} provides an IP address to an application when called upon:
+. Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
 .. Paste this command into the {rancher-kubectl-shell}:
 +
 [source, console, subs="attributes+"]
@@ -792,6 +797,43 @@ kubectl delete service nginx -n default
 ----
 
 Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
+
+== Deploying {cert-manager} on {rke2-full}
+
+Installing {cert-manager} is accomplished in two, main steps.
+First, you will install the required {cert-manager} Custom Resources.
+Then, you will deploy the {cert-manager} Helm chart from inside {rancher}.
+Finally, you will create the TLS certificate and private key for your {jupyterhub} service.
+
+Deploy the {cert-manager} load balancer based on the following instructions:
++
+. From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
+. From the menu on the left select `Apps`, then `Charts`
+. In the `Filter` field, type {cert-manager} and select the {cert-manager} {rancher} chart
++
+[NOTE]
+====
+The version used for this project is {cert-manager-version}.
+====
++
+. Click `Install`
+. For the `Install into Project` option, select `System`, then click `Next`
+. Click `Install`
++
+[TIP]
+====
+After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
+====
+
+== Creating the {jupyterhub} TLS certificate and private key through {cert-manager}
+
+. Add the dedicated IP address configuration to {cert-manager}:
+.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+.. When the {rancher-kubectl-shell} is ready, create these shell variables:
++
+[source, console, subs="attributes+"]
+----
+----
 
 == Deploying {juypterhub} on {rke2-full}
 
