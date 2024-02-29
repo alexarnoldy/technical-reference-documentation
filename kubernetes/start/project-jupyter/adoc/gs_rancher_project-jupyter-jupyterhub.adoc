@@ -166,7 +166,7 @@ include::./common_docinfo_vars.adoc[]
 
 :cert-manager: cert-manager
 :cert-manager-docs: https://cert-manager.io/docs/
-:cert-manager-version: 1.13.3
+:cert-manager-version: v1.13.3
 
 :aws-name-full: Amazon Web Services
 :route53-name: Amazon Route 53
@@ -536,7 +536,7 @@ Follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to
 ====
 In creating the {rke2} cluster, we have used these specific parameters:
 
-*Machine Pools*
+*Machine Pools pane*
 
 * Cluster Name: `jupyterhub`
 * Machine Count: `3`
@@ -548,17 +548,18 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Image: {sles-minimal-saved-name}
 * Network: (Select a network to which all {jupyterlab} clients can connect)
 
-*Under "Show Advanced"* 
+*Click "Show Advanced"* 
 
-*User Data* 
+*User Data:* 
 
 * Uncheck the `Install guest agent` checkbox.
 * User Data Template: {harvester-cloud-config-template-name}
 ** Ensure the cloud configuration template data shown is the same as you configured earlier
 * Check the `Install guest agent` checkbox.
 
-*Cluster Configuration*
+*Cluster Configuration pane*
 
+*Basics tab*
 * Kubernetes Version: {rke2-version}
 ====
 
@@ -568,7 +569,7 @@ When selecting the `User Data` template, some browsers won't pull in the correct
 ====
 
 After the {rke2} cluster has been deployed, its status will become "Active". 
-This can take five to ten minutes, depending on the underlying infrastructure. 
+This can take five to ten minutes, depending on the performance of the underlying infrastructure. 
 
 Please continue this procedure only after its status shows "Active".
 
@@ -805,7 +806,19 @@ First, you will install the required {cert-manager} Custom Resources.
 Then, you will deploy the {cert-manager} Helm chart from inside {rancher}.
 Finally, you will create the TLS certificate and private key for your {jupyterhub} service.
 
-Deploy the {cert-manager} load balancer based on the following instructions:
+Install the {cert-manager} Custom Resources:
++
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+. When the {rancher-kubectl-shell} is ready, execute this command:
++
+[source, console, subs="attributes+"]
+----
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
+----
++
+. Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
+
+Deploy {cert-manager} based on the following instructions:
 +
 . From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
 . From the menu on the left select `Apps`, then `Charts`
