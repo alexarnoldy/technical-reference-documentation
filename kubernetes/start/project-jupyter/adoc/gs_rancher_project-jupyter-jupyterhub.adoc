@@ -427,8 +427,9 @@ The private key will be at {key-path} /etc/letsencrypt/live/{public-fqdn}/privke
 . A publicly resolvable DNS domain name
 
 You can easily obtain a domain name from most public DNS providers, for a small fee. 
-You will need this for Let's Encrypt to verify your ownership of the {jupyterhub} service and provide the required TLS certificates for HTTPS communication. 
+You will need this for Let's Encrypt to verify your ownership of the domain supporting the {jupyterhub} service and provide the required TLS certificate for HTTPS communication. 
 See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of supported DNS providers.
+For the purposes of this document, we will be using a domain based in {route53-name}.
 
 
 .*Required software is installed on each node of the {rke2} cluster*
@@ -666,14 +667,51 @@ The version used for this project is {metallb-version}.
 After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
 +
-. Add the dedicated IP address configuration to {metallb}:
-.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
-.. When the {rancher-kubectl-shell} is ready, create these shell variables:
+
+.Add the dedicated IP address configuration to {metallb}:
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+. When the {rancher-kubectl-shell} is ready, create these shell variables:
 +
 [source, console, subs="attributes+"]
 ----
-export IP_RANGE_START=
-export IP_RANGE_END=
+export JUPYTERHUB_EXTERNAL_IP=""
+----
++
+. Paste this command into the {rancher-kubectl-shell}:
++
+[source, console, subs="attributes+"]
+----
+kubectl apply -f - <<EOF  
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: jupyterhub-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - ${JUPYTERHUB_EXTERNAL_IP}/32
+  autoAssign: false
+
+---
+
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: all-pools
+  namespace: metallb-system
+EOF
+----
+
+[NOTE]
+====
+(Optional) If additional load balanced IP addresses are desired, complete the following two steps.
+====
++
+. Create these shell variables:
+[source, console, subs="attributes+"]
+----
+export DEFAULT_IP_RANGE_START=""
+export DEFAULT_IP_RANGE_END=""
 ----
 +
 [TIP]
@@ -681,7 +719,7 @@ export IP_RANGE_END=
 There are many ways to specify the desired IP address range. See the link:{metallb-ipaddress-config-url}[{metallb} documentation] for more information.
 ====
 +
-.. Paste this command into the {rancher-kubectl-shell}:
+. Paste this command into the {rancher-kubectl-shell}:
 +
 [source, console, subs="attributes+"]
 ----
@@ -693,20 +731,12 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - ${IP_RANGE_START}-${IP_RANGE_END}
-
----
-
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: all-pools
-  namespace: metallb-system
+  - ${DEFAULT_IP_RANGE_START}-${DEFAULT_IP_RANGE_END}
 EOF
 ----
-+
-. Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
-.. Paste this command into the {rancher-kubectl-shell}:
+
+.Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
+. Paste this command into the {rancher-kubectl-shell}:
 +
 [source, console, subs="attributes+"]
 ----
@@ -769,17 +799,18 @@ spec:
   selector:
     app: nginx
   type: LoadBalancer
+  loadBalancerIP: ${JUPYTERHUB_EXTERNAL_IP}
 EOF
 ----
 +
-.. Verify the pod is `Running`, the longhorn StorageClass is the only `(default)` StorageClass, the persistentvolumeclaim is `Bound`, and the service has an `EXTERNAL-IP`
+. Verify the pod is `Running`, the longhorn StorageClass is the only `(default)` StorageClass, the persistentvolumeclaim is `Bound`, and the service has an `EXTERNAL-IP`
 +
 [source, console, subs="attributes+"]
 ----
 kubectl get pod,sc,pvc,svc -n default 
 ----
 +
-.. Test that the service is reachable through the load balancer IP address
+. Test that the service is reachable through the load balancer IP address
 +
 [source, console, subs="attributes+"]
 ----
@@ -788,7 +819,7 @@ read -r a b c EXTERNAL_IP e f < /tmp/externalip
 curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
 ----
 +
-... An HTML encoded output should be displayed that includes the phrase "Thank you for using nginx."
+.. An HTML encoded output should be displayed that includes the phrase "Thank you for using nginx."
 +
 . When finished with testing, delete the deployment and service 
 +
@@ -897,9 +928,6 @@ Create the config.yaml file that will contain the public TLS certificate and ass
 // - Complex installations may be broken into one or more subsections.
 //
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-You'll use the {rancher-full} interface to create the {rke2} cluster on {harvester}. 
-
 
 
 
