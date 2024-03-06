@@ -99,6 +99,7 @@ include::./common_docinfo_vars.adoc[]
 :rancher-kubectl-shell: Kubectl Shell
 
 :longhorn: Longhorn
+:longhorn-version: 103.2.1+up1.5.3
 :longhorn-url: https://longhorn.io/
 :longhorn-docs: https://longhorn.io/docs/latest
 :longhorn-installation-doc: https://ranchermanager.docs.rancher.com/integrations-in-rancher/longhorn/overview#installing-longhorn-with-rancher
@@ -596,6 +597,7 @@ This will suit our needs but will sacrifice higher data redundancy. The general 
 
 To configure this, we have used these specific parameters:
 
+* Version: {longhorn-version}
 * Install into Project: System
 
 *Longhorn Default Settings*
@@ -615,7 +617,7 @@ To configure this, we have used these specific parameters:
 
 [TIP]
 ====
-After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with this procedure.
+After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
 
 .Finish configuring {longhorn} and verify proper functionality
@@ -642,7 +644,7 @@ Be sure all nodes in the {rke2} cluster meet the <<Prerequisites>> section befor
 Installing {metallb} is accomplished in two, main steps.
 First, you will deploy the {metallb} Helm chart from inside {rancher}.
 Then, you will provide {metallb} with the virtual IP addresses dedicated for its use.
-Finally, you will validate that {metallb} is providing virtual IP addresses to applications upon request.
+After installation you will validate that {metallb} is providing virtual IP addresses to applications upon request.
 
 Deploy the {metallb} load balancer based on the following instructions:
 +
@@ -661,7 +663,7 @@ The version used for this project is {metallb-version}.
 +
 [TIP]
 ====
-After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
+After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
 +
 . Add the dedicated IP address configuration to {metallb}:
@@ -770,7 +772,7 @@ spec:
 EOF
 ----
 +
-.. Verify the pod is `Running`, the longhorn StorageClass is the `(default)``, the persistentvolumeclaim is `Bound`, and the service has an `EXTERNAL-IP`
+.. Verify the pod is `Running`, the longhorn StorageClass is the only `(default)` StorageClass, the persistentvolumeclaim is `Bound`, and the service has an `EXTERNAL-IP`
 +
 [source, console, subs="attributes+"]
 ----
@@ -801,10 +803,10 @@ Close the {rancher-kubectl-shell} and move on to the next step of this procedure
 
 == Deploying {cert-manager} on {rke2-full}
 
-Installing {cert-manager} is accomplished in two, main steps.
+Installing {cert-manager} is accomplished in two main steps:
 First, you will install the required {cert-manager} Custom Resources.
 Then, you will deploy the {cert-manager} Helm chart from inside {rancher}.
-Finally, you will create the TLS certificate and private key for your {jupyterhub} service.
+After installation, you will create the TLS certificate and private key for your {jupyterhub} service.
 
 Install the {cert-manager} Custom Resources:
 +
@@ -820,13 +822,13 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 
 Deploy {cert-manager} based on the following instructions:
 +
-. From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
+//. From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
 . From the menu on the left select `Apps`, then `Charts`
 . In the `Filter` field, type {cert-manager} and select the {cert-manager} {rancher} chart
 +
 [NOTE]
 ====
-The version used for this project is {cert-manager-version}.
+The version used for this project is {cert-manager-version}. If the current version isn't displayed at the top, select it from the list on the right.
 ====
 +
 . Click `Install`
@@ -835,7 +837,7 @@ The version used for this project is {cert-manager-version}.
 +
 [TIP]
 ====
-After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with this procedure.
+After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
 
 == Creating the {jupyterhub} TLS certificate and private key through {cert-manager}
