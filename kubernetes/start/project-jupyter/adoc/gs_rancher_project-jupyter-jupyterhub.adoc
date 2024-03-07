@@ -140,6 +140,7 @@ include::./common_docinfo_vars.adoc[]
 :jupyterhub-installation-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html
 
 :jupyterhub-deployed-name: jupyterhub
+:jupyterhub-namespace: jupyterhub
 
 :jupyterlab-provider: Project Jupyter
 :jupyterlab: JupyterLab
@@ -152,6 +153,7 @@ include::./common_docinfo_vars.adoc[]
 :metallb-docs: https://metallb.org/concepts/
 :metallb-version: 0.13.12
 :metallb-ipaddress-config-url: https://metallb.org/configuration/#defining-the-ips-to-assign-to-the-load-balancer-services
+:metallb-namespace: metallb-system
 
 :k8s: Kubernetes
 :k8s-version: 1.27
@@ -686,7 +688,7 @@ apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
   name: jupyterhub-pool
-  namespace: metallb-system
+  namespace: {metallb-namespace}
 spec:
   addresses:
   - ${JUPYTERHUB_EXTERNAL_IP}/32
@@ -698,7 +700,7 @@ apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
   name: all-pools
-  namespace: metallb-system
+  namespace: {metallb-namespace}
 EOF
 ----
 
@@ -728,7 +730,7 @@ apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
   name: default-pool
-  namespace: metallb-system
+  namespace: {metallb-namespace}
 spec:
   addresses:
   - ${DEFAULT_IP_RANGE_START}-${DEFAULT_IP_RANGE_END}
@@ -875,10 +877,81 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 
 . Add the dedicated IP address configuration to {cert-manager}:
 .. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
-.. When the {rancher-kubectl-shell} is ready, create these shell variables:
++
+.. When the {rancher-kubectl-shell} is ready, ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
 +
 [source, console, subs="attributes+"]
 ----
+export JUPYTERHUB_FQDN=""
+----
++
+[source, console, subs="attributes+"]
+----
+getent hosts ${JUPYTERHUB_FQDN}
+----
++
+. Create these shell variables:
++
+[source, console, subs="attributes+"]
+----
+# aws_access_key_id and aws_secret_access_key for the configured AWS user
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_REGION="" # E.g. "us-west-2"
+export DNSZONE="" # E.g. "suseaaliances.com"
+export FQDN="" # E.g. "jupyterhub.susealliances.com"
+export EMAIL_ADDR="" # valid email address for the Let's Encrypt certificate
+----
++
+[NOTE]
+====
+When initially creating the cert-manager Issuer, ensure the `server: https://acme-staging-v02` line is uncommented and the `server: https://acme-v02` line is commented out. 
+After verifying that the certificate can be issued correctly, we will reverse this to obtain the valid, production certificate.
+====
++
+. Create the cert-manager Issuer:
++
+[source, console, subs="attributes+"]
+----
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-issuer
+  namespace: {jupyterhub-namespace}
+spec:
+  acme:
+    email: ${EMAIL_ADDR}
+    server: https://acme-staging-v02.api.letsencrypt.org/directory # Use this line to test the process of issuing a certificate to avoid the Let's Encrypt production rate limits
+#    server: https://acme-v02.api.letsencrypt.org/directory # Use this line after the certificate issues correctly
+    privateKeySecretRef:
+      name: letsencrypt-issuer-priv-key # K8s secret that will contain the private key for this, specific issuer
+    solvers:
+    - selector:
+        dnsZones: 
+          - "${DNSZONE}"
+      dns01:
+        route53:
+          region: ${AWS_REGION}
+          accessKeyID: ${AWS_ACCESS_KEY_ID}
+          secretAccessKeySecretRef:
+            name: route53-credentials-secret
+            key: secret-access-key
+EOF
+----
++
+. Create the Kubernetes secret containing the aws_secret_access_key for the AWS user:
++
+[source, console, subs="attributes+"]
+----
+kubectl create -n {jupyterhub-namespace} secret generic route53-credentials-secret --from-literal=secret-access-key=${AWS_SECRET_ACCESS_KEY}
+----
++
+. Verify the contents of the secret:
++
+[source, console, subs="attributes+"]
+----
+kubectl get -n {jupyterhub-namespace} secret route53-credentials-secret -o jsonpath={.data.secret-access-key} | base64 -d; echo ""
 ----
 
 == Deploying {juypterhub} on {rke2-full}
