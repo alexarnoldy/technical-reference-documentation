@@ -115,7 +115,9 @@ include::./common_docinfo_vars.adoc[]
 :harvester-create-rke2-cluster-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
 :harevester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
 :harvester-namespace: default
-:harvester-cloud-config-template-name: rke2-ready
+:harvester-cloud-config-template-name:``
+:virtualization-management: Virtualization Management
+:cluster-management: Cluster Management
 
 :sles: SLES
 :sles-full: SUSE Linux Enterprise Server
@@ -369,7 +371,12 @@ The {metallb} load balancer needs at least three IP addresses dedicated to its o
 +
 A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to {jupyterhub}. 
 This guide will include guidance for obtaining these pieces from {lets-encrypt}. 
-{lets-encrypt} will require that you possess the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain name with API credentials to add and remove records from it.
+{lets-encrypt} will require that you provide the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain with API credentials to add and remove records from it. 
++
+[CAUTION]
+====
+It is HIGHLY recommended that the API credentials provided possess no additional capabilities beyond adding/removing records from the domain.
+====
 +
 [NOTE]
 ====
@@ -433,7 +440,7 @@ You will need this for Let's Encrypt to verify your ownership of the domain supp
 See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of supported DNS providers.
 For the purposes of this document, we will be using a domain based in {route53-name}.
 
-
+////
 .*Required software is installed on each node of the {rke2} cluster*
 //
 +
@@ -452,7 +459,7 @@ Most of the required software can be installed on {sles-full} with this command:
 ----
 sudo zypper in coreutils jq nfs-client util-linux open-iscsi
 ----
-
+////
 
 
 == Overview
@@ -575,8 +582,18 @@ When selecting the `User Data` template, some browsers won't pull in the correct
 After the {rke2} cluster has been deployed, its status will become "Active". 
 This can take five to ten minutes, depending on the performance of the underlying infrastructure. 
 
-Please continue this procedure only after its status shows "Active".
+Please continue this procedure only after its status shows `Active`.
 
+== Reboot the {rke2} cluster nodes
+
+After the {rke2} cluster has been deployed, each of the VMs in the cluster will need to be rebooted. 
+This is needed to activate the "kernel-default" kernel. 
+{longhorn} cannot operate with the minimal "kernel-default-base" kernel.
+
+. In the {rancher} UI, select {virtualization-management}, select the {harvester} cluster, then select `Virtual Machines`
+. Select the three dots to the right of the first virtual machine in {jupyterhub} cluster, then select `Restart`
+. Wait for the virtual machine to show `Active` again, and for it to show its IP address, then repeat with the next virtual machine in the cluster
+. After the final virtual machine has completed its restart return to {cluster-management} and verify the {jupyterhub} cluster is `Active`
 
 == Deploying {longhorn} on {rke2-full} 
 
