@@ -162,6 +162,10 @@ include::./common_docinfo_vars.adoc[]
 :harvester-cloud-creds-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster#create-your-cloud-credentials
 
 :lets-encrypt: Let's Encrypt
+:lets-encrypt-base-staging-url: https://acme-staging-v02
+:lets-encrypt-full-staging-url: https://acme-staging-v02.api.letsencrypt.org/directory
+:lets-encrypt-base-prod-url: https://acme-v02
+:lets-encrypt-full-prod-url: https://acme-v02.api.letsencrypt.org/directory
 :public-domain-name: susealliances.com
 :public-fqdn: {jupyterhub-deployed-name}.{public-domain-name}
 
@@ -171,6 +175,7 @@ include::./common_docinfo_vars.adoc[]
 
 :cert-manager: cert-manager
 :cert-manager-docs: https://cert-manager.io/docs/
+:cert-manager-dns01-rout53-doc: https://cert-manager.io/docs/configuration/acme/dns01/route53/
 :cert-manager-version: v1.13.3
 
 :aws-name-full: Amazon Web Services
@@ -907,6 +912,12 @@ export JUPYTERHUB_FQDN=""
 getent hosts ${JUPYTERHUB_FQDN}
 ----
 +
+[NOTE]
+====
+An AWS user with appropriate IAM policies and API access keys is needed for cert-manager to access the Route53 DNS records. 
+See the cert-manager documentation at link:{cert-manager-dns01-rout53-doc}[for more information].
+====
++
 . Create these shell variables:
 +
 [source, console, subs="attributes+"]
@@ -915,14 +926,14 @@ getent hosts ${JUPYTERHUB_FQDN}
 export AWS_ACCESS_KEY_ID=""
 export AWS_SECRET_ACCESS_KEY=""
 export AWS_REGION="" # E.g. "us-west-2"
-export DNSZONE="" # E.g. "suseaaliances.com"
+export DNSZONE="" # E.g. "susealliances.com"
 export FQDN="" # E.g. "jupyterhub.susealliances.com"
 export EMAIL_ADDR="" # valid email address for the Let's Encrypt certificate
 ----
 +
 [NOTE]
 ====
-When initially creating the cert-manager Issuer, ensure the `server: https://acme-staging-v02` line is uncommented and the `server: https://acme-v02` line is commented out. 
+When initially creating the cert-manager Issuer, ensure the `server: {lets-encrypt-base-staging-url}` line is uncommented and the `server: {lets-encrypt-base-prod-url}` line is commented out. 
 After verifying that the certificate can be issued correctly, we will reverse this to obtain the valid, production certificate.
 ====
 +
@@ -939,8 +950,8 @@ metadata:
 spec:
   acme:
     email: ${EMAIL_ADDR}
-    server: https://acme-staging-v02.api.letsencrypt.org/directory # Use this line to test the process of issuing a certificate to avoid the Let's Encrypt production rate limits
-#    server: https://acme-v02.api.letsencrypt.org/directory # Use this line after the certificate issues correctly
+    server: {lets-encrypt-full-staging-url} # Use this line to test the process of issuing a certificate to avoid the Let's Encrypt production rate limits
+#    server: {lets-encrypt-full-prod-url} # Use this line after the certificate issues correctly
     privateKeySecretRef:
       name: letsencrypt-issuer-priv-key # K8s secret that will contain the private key for this, specific issuer
     solvers:
@@ -970,6 +981,71 @@ kubectl create -n {jupyterhub-namespace} secret generic route53-credentials-secr
 ----
 kubectl get -n {jupyterhub-namespace} secret route53-credentials-secret -o jsonpath={.data.secret-access-key} | base64 -d; echo ""
 ----
++
+. Create the cert-manager Certificate resource file:
++
+[source, console, subs="attributes+"]
+----
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kubeflow-certificate
+  namespace: {jupyterhub-namespace}
+spec: 
+  secretName: kubeflow-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
+  commonName: ${FQDN}
+  dnsNames:
+    - ${FQDN}
+  issuerRef:
+    name: letsencrypt-issuer
+    kind: Issuer
+EOF
+----
++
+. Check the status of the certificate:
++
+[source, console, subs="attributes+"]
+----
+kubectl get -w -n {jupyterhub-namespace} certificate
+----
++
+.. Use `Ctrl+c` to exit the kubectl -w (watch) command
++
+[NOTE]
+====
+The certificate commonly takes 100 seconds to be issued but can take up to three minutes. 
+The `READY` status will change to `True` when it is issued.
+====
++
+. If needed, check the progress of the certificate:
++
+[source, console, subs="attributes+"]
+----
+kubectl describe -n {jupyterhub-namespace} certificate kubeflow-certificate
+----
++
+[IMPORTANT]
+====
+If the certificate seems to be taking a long time to be issued, review the cert-manager logs for clues. 
+Common errors are related to DNS resolution, credentials, and IAM policies. 
+Keep checking back for the status of the certificate since it will likely keep working in the background.
+====
++
+. If needed, review the cert-manager logs:
++
+[source, console, subs="attributes+"]
+----
+kubectl logs -n cert-manager -l app=cert-manager
+----
++
+[IMPORTANT]
+====
+Proceed to the next section only after the certificate shows a `READY` status of `True` 
+====
++
+
+
 
 == Deploying {juypterhub} on {rke2-full}
 
