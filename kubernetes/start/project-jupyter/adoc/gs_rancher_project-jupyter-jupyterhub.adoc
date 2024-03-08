@@ -900,25 +900,13 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 . Add the dedicated IP address configuration to {cert-manager}:
 .. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
 +
-.. When the {rancher-kubectl-shell} is ready, ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
-+
-[source, console, subs="attributes+"]
-----
-export JUPYTERHUB_FQDN=""
-----
-+
-[source, console, subs="attributes+"]
-----
-getent hosts ${JUPYTERHUB_FQDN}
-----
-+
 [NOTE]
 ====
 An AWS user with appropriate IAM policies and API access keys is needed for cert-manager to access the Route53 DNS records. 
 See the cert-manager documentation at link:{cert-manager-dns01-rout53-doc}[for more information].
 ====
 +
-. Create these shell variables:
+. When the {rancher-kubectl-shell} is ready,create these shell variables:
 +
 [source, console, subs="attributes+"]
 ----
@@ -929,6 +917,13 @@ export AWS_REGION="" # E.g. "us-west-2"
 export DNSZONE="" # E.g. "susealliances.com"
 export FQDN="" # E.g. "jupyterhub.susealliances.com"
 export EMAIL_ADDR="" # valid email address for the Let's Encrypt certificate
+----
++
+. Ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
++
+[source, console, subs="attributes+"]
+----
+getent hosts ${FQDN}
 ----
 +
 [NOTE]
@@ -990,10 +985,10 @@ kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: kubeflow-certificate
+  name: {jupyterhub}-certificate
   namespace: {jupyterhub-namespace}
 spec: 
-  secretName: kubeflow-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
+  secretName: {jupyterhub}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
   commonName: ${FQDN}
   dnsNames:
     - ${FQDN}
@@ -1022,7 +1017,7 @@ The `READY` status will change to `True` when it is issued.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl describe -n {jupyterhub-namespace} certificate kubeflow-certificate
+kubectl describe -n {jupyterhub-namespace} certificate {jupyterhub}-certificate
 ----
 +
 [IMPORTANT]
@@ -1044,10 +1039,28 @@ kubectl logs -n cert-manager -l app=cert-manager
 Proceed to the next section only after the certificate shows a `READY` status of `True` 
 ====
 +
+. Edit the `letsencrypt-issuer` to change from the {lets-encrypt} staging server to the production server:
++
+[source, console, subs="attributes+"]
+----
+Staging:    {lets-encrypt-full-staging-url}
+Production: {lets-encrypt-full-prod-url}
+----
++
+. Remove the staging certificate and its associated secret:
++
+[source, console, subs="attributes+"]
+----
+kubectl -n istio-system delete secret {jupyterhub}-certificate-secret
+kubectl -n istio-system delete certificate {jupyterhub}-certificate
+----
 
 
 
-== Deploying {juypterhub} on {rke2-full}
+
+
+
+== Deploying {jupyterhub} on {rke2-full}
 
 [IMPORTANT]
 ====
