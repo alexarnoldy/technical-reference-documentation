@@ -985,10 +985,10 @@ kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {jupyterhub}-certificate
+  name: {jupyterhub-deployed-name}-certificate
   namespace: {jupyterhub-namespace}
 spec: 
-  secretName: {jupyterhub}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
+  secretName: {jupyterhub-deployed-name}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
   commonName: ${FQDN}
   dnsNames:
     - ${FQDN}
@@ -1017,7 +1017,7 @@ The `READY` status will change to `True` when it is issued.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl describe -n {jupyterhub-namespace} certificate {jupyterhub}-certificate
+kubectl describe -n {jupyterhub-namespace} certificate {jupyterhub-deployed-name}-certificate
 ----
 +
 [IMPORTANT]
@@ -1043,18 +1043,53 @@ Proceed to the next section only after the certificate shows a `READY` status of
 +
 [source, console, subs="attributes+"]
 ----
-Staging:    {lets-encrypt-full-staging-url}
-Production: {lets-encrypt-full-prod-url}
+kubectl -n {jupyterhub-namespace} edit issuer letsencrypt-issuer
 ----
++
+[NOTE]
+====
+The {lets-encrypt} URLs are as follows:
+
+Staging: {lets-encrypt-full-staging-url}
+
+Production: {lets-encrypt-full-prod-url}
+====
 +
 . Remove the staging certificate and its associated secret:
 +
 [source, console, subs="attributes+"]
 ----
-kubectl -n istio-system delete secret {jupyterhub}-certificate-secret
-kubectl -n istio-system delete certificate {jupyterhub}-certificate
+kubectl -n {jupyterhub-namespace} delete secret {jupyterhub-deployed-name}-certificate-secret
+kubectl -n {jupyterhub-namespace} delete certificate {jupyterhub-deployed-name}-certificate
 ----
-
++
+. Create the production certificate:
++
+[source, console, subs="attributes+"]
+----
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {jupyterhub-deployed-name}-certificate
+  namespace: {jupyterhub-namespace}
+spec: 
+  secretName: {jupyterhub-deployed-name}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
+  commonName: ${FQDN}
+  dnsNames:
+    - ${FQDN}
+  issuerRef:
+    name: letsencrypt-issuer
+    kind: Issuer
+EOF
+----
++
+. Check the status of the certificate and secret:
++
+[source, console, subs="attributes+"]
+----
+kubectl get -n jupyterhub certificates,secrets
+----
 
 
 
