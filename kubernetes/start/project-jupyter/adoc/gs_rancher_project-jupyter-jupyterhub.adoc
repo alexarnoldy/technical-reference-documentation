@@ -97,6 +97,7 @@ include::./common_docinfo_vars.adoc[]
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
 :rancher-kubectl-shell: Kubectl Shell
+:rancher-kubectl-shell-variables-file: /tmp/variables
 
 :longhorn: Longhorn
 :longhorn-version: 103.2.1+up1.5.3
@@ -513,7 +514,8 @@ DEFAULT_IP_RANGE_END
 +
 [IMPORTANT]
 ====
-Any keys that do not have values assigned to them will be omitted when the ConfigMap is created. This missing data will cause errors later in this procedure.
+Any keys that do not have values assigned to them will be omitted when the ConfigMap is created. 
+This missing data will cause errors later in this procedure.
 ====
 +
 .. Click the `Create` button at the bottom right of the window
@@ -658,7 +660,7 @@ This is needed to activate the "kernel-default" kernel.
 Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {longhorn}.
 ====
 +
-Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn{ with {rancher-full}
+Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn} with {rancher-full}
 +
 [TIP]
 ====
@@ -710,6 +712,21 @@ After the final message `SUCCESS: helm upgrade --install=true...` is displayed, 
 .. Check the checkbox next to the new PVC, then click `Delete`
 ////
 
+== Create the variables file 
+
+[NOTE]
+====
+This part of the procedure will create a {rancher-kubectl-shell-variables-file} in the current session of the {rancher-kubectl-shell}.
+This is necessary every time the {rancher-kubectl-shell} is opened.
+
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables 
+----
+
 == Deploying {metallb} on {rke2-full}
 
 [IMPORTANT]
@@ -744,18 +761,17 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 +
 
 .Add the dedicated IP address configuration to {metallb}:
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
-. When the {rancher-kubectl-shell} is ready, create these shell variables:
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. When the {rancher-kubectl-shell} is ready, run this command:
++
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
 +
 [source, console, subs="attributes+"]
 ----
-export JUPYTERHUB_EXTERNAL_IP=""
-----
-+
-. Paste this command into the {rancher-kubectl-shell}:
-+
-[source, console, subs="attributes+"]
-----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl apply -f - <<EOF  
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -779,15 +795,8 @@ EOF
 
 [NOTE]
 ====
-(Optional) If additional load balanced IP addresses are desired, complete the following two steps.
+(Optional) If additional load balanced IP addresses are desired, complete the following step.
 ====
-+
-. Create these shell variables:
-[source, console, subs="attributes+"]
-----
-export DEFAULT_IP_RANGE_START=""
-export DEFAULT_IP_RANGE_END=""
-----
 +
 [TIP]
 ====
@@ -796,8 +805,14 @@ There are many ways to specify the desired IP address range. See the link:{metal
 +
 . Paste this command into the {rancher-kubectl-shell}:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} &&
 kubectl apply -f - <<EOF  
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -813,8 +828,14 @@ EOF
 .Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
 . Paste this command into the {rancher-kubectl-shell}:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -887,8 +908,14 @@ kubectl get pod,sc,pvc,svc -n default
 +
 . Test that the service is reachable through the load balancer IP address
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl get svc -n default | grep -w nginx > /tmp/externalip
 read -r a b c EXTERNAL_IP e f < /tmp/externalip
 curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
@@ -949,7 +976,7 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 == Creating the {jupyterhub} TLS certificate and private key through {cert-manager}
 
 . Add the dedicated IP address configuration to {cert-manager}:
-.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
 +
 [NOTE]
 ====
@@ -957,23 +984,16 @@ An AWS user with appropriate IAM policies and API access keys is needed for cert
 See the cert-manager documentation at link:{cert-manager-dns01-rout53-doc}[for more information].
 ====
 +
-. When the {rancher-kubectl-shell} is ready,create these shell variables:
+.. When the {rancher-kubectl-shell} is ready, run the following command to ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
++
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
 +
 [source, console, subs="attributes+"]
 ----
-# aws_access_key_id and aws_secret_access_key for the configured AWS user
-export AWS_ACCESS_KEY_ID=""
-export AWS_SECRET_ACCESS_KEY=""
-export AWS_REGION="" # E.g. "us-west-2"
-export DNSZONE="" # E.g. "susealliances.com"
-export FQDN="" # E.g. "jupyterhub.susealliances.com"
-export EMAIL_ADDR="" # valid email address for the Let's Encrypt certificate
-----
-+
-. Ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
-+
-[source, console, subs="attributes+"]
-----
+source {rancher-kubectl-shell-variables-file} && \
 getent hosts ${FQDN}
 ----
 +
@@ -985,8 +1005,14 @@ After verifying that the certificate can be issued correctly, we will reverse th
 +
 . Create the cert-manager Issuer:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -1016,8 +1042,14 @@ EOF
 +
 . Create the Kubernetes secret containing the aws_secret_access_key for the AWS user:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl create -n {jupyterhub-namespace} secret generic route53-credentials-secret --from-literal=secret-access-key=${AWS_SECRET_ACCESS_KEY}
 ----
 +
@@ -1030,8 +1062,14 @@ kubectl get -n {jupyterhub-namespace} secret route53-credentials-secret -o jsonp
 +
 . Create the cert-manager Certificate resource file:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -1116,8 +1154,14 @@ kubectl -n {jupyterhub-namespace} delete certificate {jupyterhub-deployed-name}-
 +
 . Create the production certificate:
 +
+[IMPORTANT]
+====
+If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+====
++
 [source, console, subs="attributes+"]
 ----
+source {rancher-kubectl-shell-variables-file} && \
 kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
