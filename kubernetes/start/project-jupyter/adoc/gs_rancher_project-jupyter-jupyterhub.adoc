@@ -520,7 +520,7 @@ If you prefer, configure a more secure password for the root and sles users.
 +
 [IMPORTANT]
 ====
-Update only one the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL, or with a subscription code (i.e. regcode). 
+Uncomment and update only one the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL or with a subscription code (i.e. regcode). 
 Be sure to remove the other command.
 ====
 +
