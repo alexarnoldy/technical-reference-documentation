@@ -116,7 +116,7 @@ include::./common_docinfo_vars.adoc[]
 :harvester-create-rke2-cluster-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
 :harevester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
 :harvester-namespace: default
-:harvester-cloud-config-template-name:``
+:harvester-cloud-config-template-name: rke2-ready
 :virtualization-management: Virtualization Management
 :cluster-management: Cluster Management
 
@@ -167,6 +167,7 @@ include::./common_docinfo_vars.adoc[]
 :lets-encrypt-full-staging-url: https://acme-staging-v02.api.letsencrypt.org/directory
 :lets-encrypt-base-prod-url: https://acme-v02
 :lets-encrypt-full-prod-url: https://acme-v02.api.letsencrypt.org/directory
+:lets-encrypt-dns-providers-url: https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438
 :public-domain-name: susealliances.com
 :public-fqdn: {jupyterhub-deployed-name}.{public-domain-name}
 
@@ -330,7 +331,7 @@ To be successful, you need a foundational understanding of {k8s}, {rancher}, and
 
 The author wants to acknowledge contributions to this guide by:
 
-* {contrib1_firstname} {contrib1_surname}, {contrib1_orgname}, {contrib1_jobtitle}
+* {author1_firstname} {author1_surname}, {author1_orgname}, {author1_jobtitle}
 //* {contrib2_firstname} {contrib2_surname}, {contrib2_orgname}, {contrib2_jobtitle}
 * {editor1_firstname} {editor1_surname}, {editor1_orgname}, {editor1_jobtitle}
 
@@ -356,7 +357,8 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 . A {harvester} cluster 
 //
 +
-{harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. See {harvester-cloud-creds-url} for more information.
+{harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. 
+See {harvester-cloud-creds-url} for more information.
 //
 +
 [NOTE]
@@ -366,86 +368,44 @@ If you don't have a {harvester} cluster readily available, {rke2} can be deploye
 ====
 +
 
-.*Three or more available IP addresses*
+.*At least one dedicated IP address*
 //
 +
-The {metallb} load balancer needs at least three IP addresses dedicated to its operation. This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
+You will need to dedicated one IP address to the {jupyterhub} service.
+Additional IP addresses can be allocated for other functions on this {k8s} cluster. 
+All IP addresses will be managed by the {metallb} load balancer.
+This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
 +
 
 .*TLS certificate and private key*
 //
 +
-A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to {jupyterhub}. 
-This guide will include guidance for obtaining these pieces from {lets-encrypt}. 
-{lets-encrypt} will require that you provide the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain with API credentials to add and remove records from it. 
+A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to this deployment of {jupyterhub}. 
+This document will include guidance for obtaining these items from {lets-encrypt}. 
+//{lets-encrypt} will require that you provide the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain as well as the API credentials to add and remove records from it. 
 +
-[CAUTION]
-====
-It is HIGHLY recommended that the API credentials provided possess no additional capabilities beyond adding/removing records from the domain.
-====
-+
-[NOTE]
-====
-While it is not recommended, this deployment can be completed with HTTP communication, sacrificing security for simplicity. 
-This should never be done in production, or otherwise valuable, environments.
-====
+//[NOTE]
+//====
+//While it is not recommended, this deployment can be completed with HTTP communication, sacrificing security for simplicity. 
+//This should never be done in production, or otherwise valuable, environments.
+//====
 +
 [IMPORTANT]
 ====
 It is out of the scope of this document to cover the process for providing TLS certificates from a private CA.
 ====
 +
-////
-One {sles} {sles-version} {sles-sp-full} system needs to have certbot installed on it to obtain the {lets-encrypt} TLS certificate.
-Install certbot with these commands: 
-. sudo SUSEConnect -p PackageHub/{sles-version}.{sles-sp}/x86_64
-. sudo zypper install {certbot-package-name}
-+
-Review the {certbot-name} information for link:{certbot-dns-plugin-url}[connecting to your DNS provider]
-+
-[NOTE]
-====
-For this procedure we are using {route53-name} from {aws-name-full}.
-We will provide {certbot-name} with {route53-name} credentials through environmental variables.
-====
-+
-. Switch to the root user account:
-+
-[source, console, subs="attributes+"]
-----
-sudo -i
-----
-+
-. Set the credential variables that can modify the DNS zone in {route53-name}, as well as the fully qualified domain name for {jupyterhub}
-+
-[source, console, subs="attributes+"]
-----
-export AWS_ACCESS_KEY_ID=""
-export AWS_SECRET_ACCESS_KEY=""
-export FQDN="{public-fqdn}"
-----
-+
-. Run {certbot-name} to generate the {lets-encrypt} TLS certifiate and associated private key
-+
-[source, console, subs="attributes+"]
-----
-/usr/bin/certbot certonly --cert-name ${FQDN} --dns-route53 -d ${FQDN}
-----
-+
-[NOTE]
-====
-The TLS certificate will be at {crt-path} /etc/letsencrypt/live/{public-fqdn}/fullchain.pem
-The private key will be at {key-path} /etc/letsencrypt/live/{public-fqdn}/privkey.pem
-====
-////
-
 . A publicly resolvable DNS domain name
 
+This guide will focus on using {route53-name} to provide a Fully Qualified Domain Name (FQDN) for the {jupyterhub} service. 
 You can easily obtain a domain name from most public DNS providers, for a small fee. 
-You will need this for Let's Encrypt to verify your ownership of the domain supporting the {jupyterhub} service and provide the required TLS certificate for HTTPS communication. 
-See this link:https://community.letsencrypt.org/t/dns-providers-who-easily-integrate-with-lets-encrypt-dns-validation/86438[blog post] for a general list of supported DNS providers.
-For the purposes of this document, we will be using a domain based in {route53-name}.
-
+Let's Encrypt will require that you provide API credentials that can add and remove records from your DNS domain to verify your ownership of it. 
+See this link:{lets-encrypt-dns-providers-url}[blog post] for a general list of supported DNS providers.
++
+[CAUTION]
+====
+It is HIGHLY recommended that the API credentials provided possess no additional capabilities beyond adding/removing records from the domain.
+====
 ////
 .*Required software is installed on each node of the {rke2} cluster*
 //
@@ -469,56 +429,6 @@ sudo zypper in coreutils jq nfs-client util-linux open-iscsi
 
 == Setting up your environment
 
-Certain information is needed multiple times throughout the build process and even deployment process.
-This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
-
-. Create the `variables` configmap in the `cattle-system` namespace:
-+
-.. In the {rancher} UI, select the Home icon from the menu on the left
-.. Select the {jupyterhub} cluster
-.. Select `Storage`, then `ConfigMaps`
-.. Click the `Create` button on the top right of the window
-.. Select the `cattle-system` namespace
-.. Name the ConfigMap
-+
-[source, console]
-----
-variables
-----
-+
-.. Copy all of these keys into the `Key` column. Each key will automatically get populated into its own row.
-+
-[source, console]
-----
-AWS_ACCESS_KEY_ID
-AWS_REGION
-DNSZONE
-FQDN
-EMAIL_ADDR
-JUPYTERHUB_EXTERNAL_IP
-DEFAULT_IP_RANGE_START
-DEFAULT_IP_RANGE_END
-----
-+
-.. Populate the Value for each column based on the following guidance:
-+
-* AWS_ACCESS_KEY_ID is the access key for the {aws-name-full} account that can update records in the {route53-name} DNS zone. E.g. "AK1231231231231231"
-*  AWS_REGION is the default region for the {aws-name-full} account. E.g. "us-west-2"
-*  DNSZONE is the name of the DNS domain. E.g. "susealliances.com"
-*  FQDN is the fully qualified domain name to reach the {jupyterhub} service. E.g. "jupyterhub.susealliances.com"
-*  EMAIL_ADDR is a valid email address to use when creating the Let's Encrypt certificate.
-*  JUPYTERHUB_EXTERNAL_IP is the IP address that can be resolved publicly to the FQDN. It does not have to be a publicly accessible IP address.
-*  DEFAULT_IP_RANGE_START is an OPTIONAL, setting to allow for additional MetalLB IPs. 
-*  DEFAULT_IP_RANGE_END is an OPTIONAL, setting to allow for additional MetalLB IPs.
-----
-+
-[IMPORTANT]
-====
-Any keys that do not have values assigned to them will be omitted when the ConfigMap is created. 
-This missing data will cause errors later in this procedure.
-====
-+
-.. Click the `Create` button at the bottom right of the window
 
 == Overview
 
@@ -536,14 +446,13 @@ This missing data will cause errors later in this procedure.
 
 This Getting Started guide will help you build a production quality JupyterHub environment running on an {rke2} {k8s} cluster deployed on virtual machines provided by the {harvester} hypervisor. 
 We'll navigate the journey step-by-step, covering:
-//
-+
+
 * Deploying {rke2-full} on {harvester}: You'll leverage {rancher-full} for {k8s} application and cluster management. 
-+
+
 * Configuring {longhorn} for for highly available, persistent storage.
-+
+
 * Configuring {metallb}: This versatile load balancer provides virtual IP addresses that ensures traffic to your {jupyterlab} server instances isn't interrupted, even after a node failure.
-+
+
 * Installing {jupyterhub}: Using its Helm chart, we'll seamlessly integrate {jupyterhub} within your RKE2 cluster, equipping you with a dynamic platform for interactive data analysis and collaboration.
 
 == Configure {harvester} to deploy properly configured virtual machines
@@ -555,7 +464,9 @@ Following link:{harvester-upload-image-url}[these instructions], upload the {sle
 [NOTE] 
 ====
 In uploading the {sles-minimal} image to {harvester}, we used these parameters:
+
 * Namespace: `{harvester-namespace}`
+
 * Name: `{sles-minimal-saved-name}`
 ====
 
@@ -563,7 +474,7 @@ Create a `Cloud Config Template` based on link:{harevester-cloud-configuration-u
 +
 [NOTE]
 ====
-For this procedure, we have named this Cloud Configuration Template {harvester-cloud-config-template-name}
+For this procedure, we have named this Cloud Configuration Template `{harvester-cloud-config-template-name}`
 ====
 +
 [NOTE]
@@ -573,7 +484,7 @@ If you prefer, configure a more secure password for the root and sles users.
 +
 [IMPORTANT]
 ====
-Uncomment and update only one the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL or with a subscription code (i.e. regcode). 
+Uncomment and update ONLY ONE the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL or with a subscription code (i.e. regcode). 
 Be sure to remove the other command.
 ====
 +
@@ -622,7 +533,7 @@ In creating the {rke2} cluster, we have used these specific parameters:
 *User Data:* 
 
 * Uncheck the `Install guest agent` checkbox.
-* User Data Template: {harvester-cloud-config-template-name}
+* User Data Template: `{harvester-cloud-config-template-name}`
 ** Ensure the cloud configuration template data shown is the same as you configured earlier
 * Check the `Install guest agent` checkbox.
 
@@ -634,24 +545,90 @@ In creating the {rke2} cluster, we have used these specific parameters:
 
 [TIP]
 ====
-When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you first unchecked that box, selected the correct user data, then checked that box again.
+When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you can first unchecked that box, selected the correct user data, then checked that box again.
 ====
 
-After the {rke2} cluster has been deployed, its status will become "Active". 
+After the {rke2} cluster has been deployed, its status will become `Active`. 
 This can take five to ten minutes, depending on the performance of the underlying infrastructure. 
 
-Please continue this procedure only after its status shows `Active`.
+Please continue this procedure only after the cluster status shows `Active`.
 
 == Reboot the {rke2} cluster nodes
 
 After the {rke2} cluster has been deployed, each of the VMs in the cluster will need to be rebooted. 
-This is needed to activate the "kernel-default" kernel. 
+This is required to activate the "kernel-default" kernel. 
 {longhorn} cannot operate with the minimal "kernel-default-base" kernel.
 
 . In the {rancher} UI, select {virtualization-management}, select the {harvester} cluster, then select `Virtual Machines`
 . Select the three dots to the right of the first virtual machine in {jupyterhub} cluster, then select `Restart`
 . Wait for the virtual machine to show `Active` again, and for it to show its IP address, then repeat with the next virtual machine in the cluster
 . After the final virtual machine has completed its restart return to {cluster-management} and verify the {jupyterhub} cluster is `Active`
+
+== Create the variables ConfigMap
+Certain information is needed multiple times throughout the build process and even deployment process.
+This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
+
+. Create the `variables` configmap in the `cattle-system` namespace:
+.. In the {rancher} UI, select the Home icon from the menu on the left
+.. Select the {jupyterhub} cluster
+.. Select `Storage`, then `ConfigMaps`
+.. Click the `Create` button on the top right of the window
+.. Select the `cattle-system` namespace
+.. Name the ConfigMap
++
+[source, console]
+----
+variables
+----
++
+.. Copy all of these keys into the `Key` column. Each key will automatically get populated into its own row.
++
+[source, console]
+----
+AWS_ACCESS_KEY_ID
+AWS_REGION
+DNSZONE
+FQDN
+EMAIL_ADDR
+JUPYTERHUB_EXTERNAL_IP
+DEFAULT_IP_RANGE_START
+DEFAULT_IP_RANGE_END
+----
++
+.. Populate the `Value` for each column based on the following guidance:
++
+* AWS_ACCESS_KEY_ID is the access key for the {aws-name-full} account that can update records in the {route53-name} DNS zone. E.g. "AK1231231231231231"
+*  AWS_REGION is the default region for the {aws-name-full} account. E.g. "us-west-2"
+*  DNSZONE is the name of the DNS domain. E.g. "susealliances.com"
+*  FQDN is the fully qualified domain name to reach the {jupyterhub} service. E.g. "jupyterhub.susealliances.com"
+*  EMAIL_ADDR is a valid email address to use when creating the Let's Encrypt certificate.
+*  JUPYTERHUB_EXTERNAL_IP is the IP address that can be resolved publicly to the FQDN. It does not have to be a publicly accessible IP address.
+*  DEFAULT_IP_RANGE_START is an OPTIONAL, setting to allow for additional MetalLB IPs. 
+*  DEFAULT_IP_RANGE_END is an OPTIONAL, setting to allow for additional MetalLB IPs.
++
+[IMPORTANT]
+====
+Any keys that do not have values assigned to them will be omitted when the ConfigMap is created. 
+This missing data will cause errors later in this procedure.
+====
++
+.. Click the `Create` button at the bottom right of the window
+
+== Create the variables file 
+
+[NOTE]
+====
+This part of the procedure will create a {rancher-kubectl-shell-variables-file} in the current session of the {rancher-kubectl-shell}.
+This is necessary every time the {rancher-kubectl-shell} is opened.
+====
+
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables 
+----
 
 == Deploying {longhorn} on {rke2-full} 
 
@@ -692,40 +669,17 @@ To configure this, we have used these specific parameters:
 
 * Longhorn UI Service: Rancher-Proxy
 ====
-
++
 [TIP]
 ====
 After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
-
++
 .Finish configuring {longhorn} and verify proper functionality
-
++
 . From the menu on the left, select `Storage`, then `StorageClasses`
 .. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
-////
-. Also under the `Storage` menu item, select `PersistentVolumeClaims`
-.. Click `Create`
-.. Provide any name such as `test`
-.. Ensure the `Storage Class` dropdown says `Use the default class` 
-.. Click `Create`
-.. After a few seconds the new PVC should change from `Pending` to `Bound`
-.. Check the checkbox next to the new PVC, then click `Delete`
-////
 
-== Create the variables file 
-
-[NOTE]
-====
-This part of the procedure will create a {rancher-kubectl-shell-variables-file} in the current session of the {rancher-kubectl-shell}.
-This is necessary every time the {rancher-kubectl-shell} is opened.
-
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
-. When the {rancher-kubectl-shell} is ready, run the following command:
-+
-[source, console, subs="attributes+"]
-----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables 
-----
 
 == Deploying {metallb} on {rke2-full}
 
@@ -932,7 +886,7 @@ kubectl delete pvc nginx-pvc -n default
 kubectl delete service nginx -n default 
 ----
 
-Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
+If you want to, you can pull the border between the {rancher-kubectl-shell} and the {rancher} UI down until you need the shell again.
 
 == Deploying {cert-manager} on {rke2-full}
 
@@ -951,7 +905,7 @@ Install the {cert-manager} Custom Resources:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
 ----
 +
-. Close the {rancher-kubectl-shell} and move on to the next step of this procedure.
+. If you want to, you can pull the border between the {rancher-kubectl-shell} and the {rancher} UI down until you need the shell again.
 
 Deploy {cert-manager} based on the following instructions:
 +
