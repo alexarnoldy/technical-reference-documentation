@@ -571,6 +571,7 @@ This information can be stored in environment variables and recalled as needed, 
 . Create the `variables` configmap in the `cattle-system` namespace:
 .. In the {rancher} UI, select the Home icon from the menu on the left
 .. Select the {jupyterhub} cluster
+.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces`
 .. Select `Storage`, then `ConfigMaps`
 .. Click the `Create` button on the top right of the window
 .. Select the `cattle-system` namespace
@@ -581,36 +582,31 @@ This information can be stored in environment variables and recalled as needed, 
 variables
 ----
 +
-.. Copy all of these keys into the `Key` column. Each key will automatically get populated into its own row.
+.. Copy all of these keys into the first cell in the `Key` column. Each key will automatically get populated into its own cell.
 +
 [source, console]
 ----
 AWS_ACCESS_KEY_ID
 AWS_REGION
-DNSZONE
-FQDN
-EMAIL_ADDR
-JUPYTERHUB_EXTERNAL_IP
 DEFAULT_IP_RANGE_START
 DEFAULT_IP_RANGE_END
+DNSZONE
+EMAIL_ADDR
+FQDN
+JUPYTERHUB_EXTERNAL_IP
+
 ----
 +
 .. Populate the `Value` for each column based on the following guidance:
 +
 * AWS_ACCESS_KEY_ID is the access key for the {aws-name-full} account that can update records in the {route53-name} DNS zone. E.g. "AK1231231231231231"
 *  AWS_REGION is the default region for the {aws-name-full} account. E.g. "us-west-2"
-*  DNSZONE is the name of the DNS domain. E.g. "susealliances.com"
-*  FQDN is the fully qualified domain name to reach the {jupyterhub} service. E.g. "jupyterhub.susealliances.com"
-*  EMAIL_ADDR is a valid email address to use when creating the Let's Encrypt certificate.
-*  JUPYTERHUB_EXTERNAL_IP is the IP address that can be resolved publicly to the FQDN. It does not have to be a publicly accessible IP address.
 *  DEFAULT_IP_RANGE_START is an OPTIONAL, setting to allow for additional MetalLB IPs. 
 *  DEFAULT_IP_RANGE_END is an OPTIONAL, setting to allow for additional MetalLB IPs.
-+
-[IMPORTANT]
-====
-Any keys that do not have values assigned to them will be omitted when the ConfigMap is created. 
-This missing data will cause errors later in this procedure.
-====
+*  DNSZONE is the name of the DNS domain. E.g. "susealliances.com"
+*  EMAIL_ADDR is a valid email address to use when creating the Let's Encrypt certificate.
+*  FQDN is the fully qualified domain name to reach the {jupyterhub} service. E.g. "jupyterhub.susealliances.com"
+*  JUPYTERHUB_EXTERNAL_IP is the IP address that can be resolved publicly to the FQDN. It does not have to be a publicly accessible IP address.
 +
 .. Click the `Create` button at the bottom right of the window
 
@@ -622,13 +618,15 @@ This part of the procedure will create a {rancher-kubectl-shell-variables-file} 
 This is necessary every time the {rancher-kubectl-shell} is opened.
 ====
 
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables 
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables && cat /tmp/variables
 ----
+
+. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
 == Deploying {longhorn} on {rke2-full} 
 
@@ -636,49 +634,54 @@ kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_ent
 ====
 Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {longhorn}.
 ====
-+
-Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn} with {rancher-full}
-+
+
+Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn} with {rancher-full}.
+Be sure to return to this document to edit the *Longhorn Default Settings*.
+
 [TIP]
 ====
 It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
 However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
 ====
-+
+
 [NOTE]
 ====
 In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
 This will suit our needs but will sacrifice higher data redundancy. The general guidance here is to use one or two volume replicas, but always one less than the number of nodes in the {rke2} cluster.
+====
 
-To configure this, we have used these specific parameters:
+To configure Longhorn, we have used these specific parameters:
 
 * Version: {longhorn-version}
 * Install into Project: System
 
-*Longhorn Default Settings*
+(Click Next to reach the next screen)
+
+Select *Longhorn Default Settings*
 
 * Check the `Customize Default Settings` checkbox
 * Default Replica Count: `2`
 * Check the `Replica Node Level Soft Anti-Affinity`
 
-*Longhorn Storage Class Settings*
+Select *Longhorn Storage Class Settings*
 
 * Default Storage Class Replica Count: `2`
 
-*Services and Load Balancing*
+Select *Services and Load Balancing*
 
 * Longhorn UI Service: Rancher-Proxy
-====
-+
+
+(Click Install when ready)
+
 [TIP]
 ====
 After the final message `SUCCESS: helm upgrade --install=true...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
-+
-.Finish configuring {longhorn} and verify proper functionality
-+
+
+Finish configuring {longhorn} and verify proper functionality
+
 . From the menu on the left, select `Storage`, then `StorageClasses`
-.. If there are any other StorageClasses that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
+.. If there are any other StorageClasses, aside from the `Longhorn` StorageClass, that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
 
 
 == Deploying {metallb} on {rke2-full}
@@ -694,7 +697,7 @@ Then, you will provide {metallb} with the virtual IP addresses dedicated for its
 After installation you will validate that {metallb} is providing virtual IP addresses to applications upon request.
 
 Deploy the {metallb} load balancer based on the following instructions:
-+
+
 . From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
 . From the menu on the left select `Apps`, then `Charts`
 . In the `Filter` field, type {metallb} and select the {metallb} {rancher} chart
@@ -714,7 +717,8 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 ====
 +
 
-.Add the dedicated IP address configuration to {metallb}:
+Add the dedicated IP address configuration to {metallb}:
+
 . While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
 . When the {rancher-kubectl-shell} is ready, run this command:
 +
@@ -886,7 +890,7 @@ kubectl delete pvc nginx-pvc -n default
 kubectl delete service nginx -n default 
 ----
 
-If you want to, you can pull the border between the {rancher-kubectl-shell} and the {rancher} UI down until you need the shell again.
+If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
 == Deploying {cert-manager} on {rke2-full}
 
@@ -905,7 +909,7 @@ Install the {cert-manager} Custom Resources:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
 ----
 +
-. If you want to, you can pull the border between the {rancher-kubectl-shell} and the {rancher} UI down until you need the shell again.
+. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
 Deploy {cert-manager} based on the following instructions:
 +
