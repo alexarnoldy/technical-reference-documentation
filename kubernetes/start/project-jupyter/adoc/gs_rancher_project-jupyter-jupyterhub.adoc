@@ -623,7 +623,7 @@ This is necessary every time the {rancher-kubectl-shell} is opened.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > /tmp/variables && cat /tmp/variables
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 
 . If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
@@ -720,12 +720,21 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 Add the dedicated IP address configuration to {metallb}:
 
 . While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
-. When the {rancher-kubectl-shell} is ready, run this command:
+
+. When the {rancher-kubectl-shell} is ready, run the following command:
 +
-[IMPORTANT]
-====
-If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
-====
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+----
+//. When the {rancher-kubectl-shell} is ready, run this command:
+//+
+//[IMPORTANT]
+//====
+//If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+//====
++
+. Create the {metallb} IPAdressPool and L2Advertisement:
 +
 [source, console, subs="attributes+"]
 ----
@@ -761,6 +770,7 @@ EOF
 There are many ways to specify the desired IP address range. See the link:{metallb-ipaddress-config-url}[{metallb} documentation] for more information.
 ====
 +
+
 . Paste this command into the {rancher-kubectl-shell}:
 +
 [IMPORTANT]
@@ -783,13 +793,14 @@ spec:
 EOF
 ----
 
-.Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
+Validate that {metallb} provides an IP address to an application and that {longhorn} provides a persistent volume, when they are called upon:
+
 . Paste this command into the {rancher-kubectl-shell}:
-+
-[IMPORTANT]
-====
-If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
-====
+//+
+//[IMPORTANT]
+//====
+//If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+//====
 +
 [source, console, subs="attributes+"]
 ----
@@ -864,7 +875,7 @@ EOF
 kubectl get pod,sc,pvc,svc -n default 
 ----
 +
-. Test that the service is reachable through the load balancer IP address
+. Test that the service is reachable through the load balancer IP address:
 +
 [IMPORTANT]
 ====
@@ -901,7 +912,9 @@ After installation, you will create the TLS certificate and private key for your
 
 Install the {cert-manager} Custom Resources:
 +
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::
+
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
+
 . When the {rancher-kubectl-shell} is ready, execute this command:
 +
 [source, console, subs="attributes+"]
@@ -909,7 +922,7 @@ Install the {cert-manager} Custom Resources:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
 ----
 +
-. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
+//. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
 Deploy {cert-manager} based on the following instructions:
 +
@@ -933,8 +946,14 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 
 == Creating the {jupyterhub} TLS certificate and private key through {cert-manager}
 
-. Add the dedicated IP address configuration to {cert-manager}:
-.. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
++
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+----
 +
 [NOTE]
 ====
@@ -942,12 +961,12 @@ An AWS user with appropriate IAM policies and API access keys is needed for cert
 See the cert-manager documentation at link:{cert-manager-dns01-rout53-doc}[for more information].
 ====
 +
-.. When the {rancher-kubectl-shell} is ready, run the following command to ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
+. Run the following command to ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
 +
-[IMPORTANT]
-====
-If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
-====
+//[IMPORTANT]
+//====
+//If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
+//====
 +
 [source, console, subs="attributes+"]
 ----
