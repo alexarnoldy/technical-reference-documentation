@@ -368,16 +368,21 @@ If you don't have a {harvester} cluster readily available, {rke2} can be deploye
 ====
 +
 
-.*At least one dedicated IP address*
+*At least one dedicated IP address*
 //
 +
 You will need to dedicated one IP address to the {jupyterhub} service.
 Additional IP addresses can be allocated for other functions on this {k8s} cluster. 
 All IP addresses will be managed by the {metallb} load balancer.
-This requirement can be differed if there is an external load balancer available (e.g. a public cloud application load balancer).
++
+[TIP]
+====
+In this design, {jupyterhub} is behind a corporate firewall/NAT router and uses a non-routable IP address. 
+This means our clients will need access to the public internet to resolve the {jupyterhub} fully qualified domain name through {route53-name} AND VPN access to connect to our {jupyterhub} service's IP address.
+====
 +
 
-.*TLS certificate and private key*
+*TLS certificate and private key*
 //
 +
 A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to this deployment of {jupyterhub}. 
@@ -427,7 +432,7 @@ sudo zypper in coreutils jq nfs-client util-linux open-iscsi
 ----
 ////
 
-== Setting up your environment
+== Set up your environment
 
 
 == Overview
@@ -508,7 +513,7 @@ runcmd:
   - systemctl start iscsid
 ----
 
-== Deploying {rke2-full} on {harvester}
+== Deploy {rke2-full} on {harvester}
 
 Follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to create an {rke2} cluster using {rancher} and {harvester}.
 
@@ -628,7 +633,7 @@ kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_ent
 
 . If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
-== Deploying {longhorn} on {rke2-full} 
+== Deploy {longhorn} on {rke2-full} 
 
 [IMPORTANT]
 ====
@@ -684,7 +689,7 @@ Finish configuring {longhorn} and verify proper functionality
 .. If there are any other StorageClasses, aside from the `Longhorn` StorageClass, that show as a "Default", click on the three dots to the right of each one, then select `Reset Default`
 
 
-== Deploying {metallb} on {rke2-full}
+== Deploy {metallb} on {rke2-full}
 
 [IMPORTANT]
 ====
@@ -700,7 +705,7 @@ Deploy the {metallb} load balancer based on the following instructions:
 
 . From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
 . From the menu on the left select `Apps`, then `Charts`
-. In the `Filter` field, type {metallb} and select the {metallb} {rancher} chart
+. In the `Filter` field, type *{metallb}* and select the {metallb} {rancher} chart
 +
 [NOTE]
 ====
@@ -780,7 +785,8 @@ If the follow command fails with the error that the {rancher-kubectl-shell-varia
 +
 [source, console, subs="attributes+"]
 ----
-source {rancher-kubectl-shell-variables-file} &&
+source {rancher-kubectl-shell-variables-file} && 
+
 kubectl apply -f - <<EOF  
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -901,9 +907,9 @@ kubectl delete pvc nginx-pvc -n default
 kubectl delete service nginx -n default 
 ----
 
-If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
+//If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
 
-== Deploying {cert-manager} on {rke2-full}
+== Deploy {cert-manager} on {rke2-full}
 
 Installing {cert-manager} is accomplished in two main steps:
 First, you will install the required {cert-manager} Custom Resources.
@@ -922,13 +928,17 @@ Install the {cert-manager} Custom Resources:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
 ----
 +
-//. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
+[TIP]
+====
+If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
+====
 
 Deploy {cert-manager} based on the following instructions:
 +
 //. From the {rancher} home screen, select the {k8s} cluster {jupyterhub-deployed-name}
+
 . From the menu on the left select `Apps`, then `Charts`
-. In the `Filter` field, type {cert-manager} and select the {cert-manager} {rancher} chart
+. In the `Filter` field, type *{cert-manager}* and select the {cert-manager} {rancher} chart
 +
 [NOTE]
 ====
@@ -944,7 +954,7 @@ The version used for this project is {cert-manager-version}. If the current vers
 After the final message `SUCCESS: helm install...` is displayed, you can close terminal window and continue with the next steps in this procedure.
 ====
 
-== Creating the {jupyterhub} TLS certificate and private key through {cert-manager}
+== Create the {jupyterhub} TLS certificate and private key through {cert-manager}
 
 . While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
 +
@@ -974,12 +984,21 @@ source {rancher-kubectl-shell-variables-file} && \
 getent hosts ${FQDN}
 ----
 +
+. Create the {jupyterhub-namespace} namespace:
++
+[source, console, subs="attributes+"]
+----
+source {rancher-kubectl-shell-variables-file} && \
+kubectl create namespace {jupyterhub-namespace}
+----
++
 [NOTE]
 ====
 When initially creating the cert-manager Issuer, ensure the `server: {lets-encrypt-base-staging-url}` line is uncommented and the `server: {lets-encrypt-base-prod-url}` line is commented out. 
 After verifying that the certificate can be issued correctly, we will reverse this to obtain the valid, production certificate.
 ====
 +
+
 . Create the cert-manager Issuer:
 +
 [IMPORTANT]
@@ -1017,12 +1036,14 @@ spec:
 EOF
 ----
 +
-. Create the Kubernetes secret containing the aws_secret_access_key for the AWS user:
+. Set the variable that contains your AWS secret access key that matches the AWS access key for the account you are using for this project:
 +
-[IMPORTANT]
-====
-If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
-====
+[source, console, subs="attributes+"]
+----
+  export AWS_SECRET_ACCESS_KEY=""
+----
++
+. Create the Kubernetes secret containing the aws_secret_access_key for the AWS user:
 +
 [source, console, subs="attributes+"]
 ----
@@ -1051,10 +1072,10 @@ kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {jupyterhub-deployed-name}-certificate
+  name: {jupyterhub-deployed-name}-staging-certificate
   namespace: {jupyterhub-namespace}
 spec: 
-  secretName: {jupyterhub-deployed-name}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
+  secretName: {jupyterhub-deployed-name}-staging-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
   commonName: ${FQDN}
   dnsNames:
     - ${FQDN}
@@ -1083,7 +1104,7 @@ The `READY` status will change to `True` when it is issued.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl describe -n {jupyterhub-namespace} certificate {jupyterhub-deployed-name}-certificate
+kubectl describe -n {jupyterhub-namespace} certificate {jupyterhub-deployed-name}-staging-certificate
 ----
 +
 [IMPORTANT]
@@ -1125,8 +1146,8 @@ Production: {lets-encrypt-full-prod-url}
 +
 [source, console, subs="attributes+"]
 ----
-kubectl -n {jupyterhub-namespace} delete secret {jupyterhub-deployed-name}-certificate-secret
-kubectl -n {jupyterhub-namespace} delete certificate {jupyterhub-deployed-name}-certificate
+kubectl -n {jupyterhub-namespace} delete secret {jupyterhub-deployed-name}-staging-certificate-secret
+kubectl -n {jupyterhub-namespace} delete certificate {jupyterhub-deployed-name}-staging-certificate
 ----
 +
 . Create the production certificate:
@@ -1144,7 +1165,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {jupyterhub-deployed-name}-certificate
-  namespace: {jupyterhub-namespace}/expo
+  namespace: {jupyterhub-namespace}
 spec: 
   secretName: {jupyterhub-deployed-name}-certificate-secret # Kubernetes secret that will contain the tls.key and tls.crt of the new cert
   commonName: ${FQDN}
@@ -1167,7 +1188,7 @@ kubectl get -n jupyterhub certificates,secrets
 
 
 
-== Deploying {jupyterhub} on {rke2-full}
+== Deploy {jupyterhub} on {rke2-full}
 
 [IMPORTANT]
 ====
@@ -1182,9 +1203,69 @@ Follow the instructions at the link:{jupyterhub-installation-doc}[{jupyterhub} i
 The instructions below will guide you through the process of creating a config.yaml file that will be required by the Helm installation command.
 ====
 
-Create the config.yaml file that will contain the public TLS certificate and associated private key.
+Create the config.yaml file that will point to the secret containing TLS certificate and private key. 
+
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
 +
-. 
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+----
++
+. Create the config.yaml file:
++
+[source, console, subs="attributes+"]
+----
+source {rancher-kubectl-shell-variables-file} && \
+cat <<EOF> config.yaml
+proxy:
+  https:
+    enabled: true
+    hosts:
+      - jupyter.susealliances.com
+    type: secret
+    secret:
+      name: {jupyterhub-deployed-name}-certificate-secret
+  service:
+    loadBalancerIP: ${JUPYTERHUB_EXTERNAL_IP}
+EOF
+----
++
+. Add the {jupyterhub} Helm chart repo:
++
+[source, console, subs="attributes+"]
+----
+helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
+helm repo update
+----
++
+. Find the current `CHART VERSION` for `jupyterhub/jupyterhub`:
++
+[source, console, subs="attributes+"]
+----
+helm search repo jupyter
+----
++
+. Set this variable with the `CHART VERSION`:
++
+[source, console, subs="attributes+"]
+----
+export CHART_VERSION=""
+----
++
+. Install {jupyterhub}:
++
+[source, console, subs="attributes+"]
+----
+helm upgrade --cleanup-on-fail \
+  --install jupyterhub jupyterhub/jupyterhub \
+  --namespace jupyterhub \
+  --create-namespace \
+  --version=${CHART_VERSION} \
+  --values config.yaml
+----
 
 
 
