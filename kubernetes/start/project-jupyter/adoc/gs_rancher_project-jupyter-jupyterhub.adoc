@@ -151,6 +151,10 @@ include::./common_docinfo_vars.adoc[]
 :jupyterlab-version: 4.0.9
 :jupyterlab-website: https://jupyter.org/
 :jupyterlab-docs: https://jupyterlab.readthedocs.io/en/latest/
+:juypter-notebooks-github-url: https://github.com/jupyter/notebook.git
+:jupyter-notebooks-running-code-filename: Running Code.ipynb
+:github-name: GitHub
+
 
 :metallb: MetalLB
 :metallb-url: https://metallb.org/
@@ -180,9 +184,12 @@ include::./common_docinfo_vars.adoc[]
 :cert-manager-docs: https://cert-manager.io/docs/
 :cert-manager-dns01-rout53-doc: https://cert-manager.io/docs/configuration/acme/dns01/route53/
 :cert-manager-version: v1.13.3
+:cert-manager-crds-url: https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
 
 :aws-name-full: Amazon Web Services
 :route53-name: Amazon Route 53
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -926,7 +933,7 @@ Install the {cert-manager} Custom Resources:
 +
 [source, console, subs="attributes+"]
 ----
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{cert-manager-version}/cert-manager.crds.yaml
+kubectl apply -f {cert-manager-crds-url}
 ----
 +
 [TIP]
@@ -1327,8 +1334,30 @@ helm upgrade --cleanup-on-fail \
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
-Demonstration or validation procedures
+To validate the operation of your new {jupyterhub} installation, we will clone the {jupyterlab-provider} {github-name} repository, then load and run one of its notebooks
 
+. Connect to your deployed {jupyterhub} fully qualified domain name. In our example it is {public-fqdn}.
+
+. Log in with a user name
++
+[NOTE]
+====
+If an identity provider hasn't been specifically integrated with {jupyterhub}, it will accept any user name as a log in and does not require a password.
+====
++
+. From the {jupyterlab} Launcher, select the `Terminal` session
+. When the session is ready, clone the {jupyterlab-provider} repository:
++
+[source, console, subs="attributes+"]
+----
+git clone https://github.com/jupyter/notebook.git
+----
++
+. After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook`
+. Open the file `{jupyter-notebooks-running-code-filename}` by double-clicking on it
+. From the top menu, select `Edit` -> `Clear Outputs of All Cells`
+. You can press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab
+. Continue to work with this notebook as long as you'd like to or until you feel your new {jupyterhub} installation is working correctly.
 
 
 == Summary
