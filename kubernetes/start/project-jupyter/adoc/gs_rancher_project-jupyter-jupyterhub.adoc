@@ -141,6 +141,7 @@ include::./common_docinfo_vars.adoc[]
 :jupyterhub-website: https://jupyter.org/hub
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
 :jupyterhub-installation-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html
+:jupyterhub-auth-doc: https://z2jh.jupyter.org/en/stable/administrator/authentication.html
 
 :jupyterhub-deployed-name: jupyterhub
 :jupyterhub-namespace: jupyterhub
@@ -1189,6 +1190,13 @@ kubectl get -n jupyterhub certificates,secrets
 
 
 == Deploy {jupyterhub} on {rke2-full}
+
+[NOTE]
+====
+It is beyond the scope of this document to configure {jupyterhub} to use an authentication method. 
+By default, {jupyterhub} will allow any user to log in with or without a password.
+See the {jupyterhub-auth-doc}[{juyterhub} authentication documentation] for information on integrating {jupyterhub} with a central authencation application.
+====
 
 [IMPORTANT]
 ====
