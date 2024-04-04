@@ -632,7 +632,7 @@ This part of the procedure will create a {rancher-kubectl-shell-variables-file} 
 This is necessary every time the {rancher-kubectl-shell} is opened.
 ====
 
-. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
 [source, console, subs="attributes+"]
