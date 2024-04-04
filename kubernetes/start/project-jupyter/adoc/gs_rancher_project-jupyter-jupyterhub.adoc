@@ -142,6 +142,7 @@ include::./common_docinfo_vars.adoc[]
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
 :jupyterhub-installation-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html
 :jupyterhub-auth-doc: https://z2jh.jupyter.org/en/stable/administrator/authentication.html
+:jupyterhub-kubernetes-customizations-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/customization.html
 
 :jupyterhub-deployed-name: jupyterhub
 :jupyterhub-namespace: jupyterhub
@@ -366,7 +367,7 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 //
 +
 {harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. 
-See {harvester-cloud-creds-url} for more information.
+See {harvester-cloud-creds-url}[for more information].
 //
 +
 [NOTE]
@@ -1338,7 +1339,7 @@ To validate the operation of your new {jupyterhub} installation, we will clone t
 
 . Connect to your deployed {jupyterhub} fully qualified domain name. In our example it is {public-fqdn}.
 
-. Log in with a user name
+. Log in with your user name
 +
 [NOTE]
 ====
@@ -1369,8 +1370,12 @@ git clone https://github.com/jupyter/notebook.git
 // - Next steps (unordered list of 2-4 further learning resources)
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Summary of this guide
-
+In this document you have gone through the process of configuring {harvester} to create the VMs needed for your {jupyterhub} deployment, deployed {rke2-full} onto those VMs, then added {longhorn}, {metal-lb}, and {cert-manager}.
+Finally, you have installed {jupypterhub} and verified that the installation is working correctly. 
+Several customizations are outside of the scope of this document. 
+For information on authenication provider integration see {jupyterhub-auth-doc}[this document].
+For information on {k8s} specfic customizations see {jupyterhub-kubernetes-customizations-doc}[this document]. 
+For general configuration information see {jupyterhub-docs}[this document].
 
 
 
