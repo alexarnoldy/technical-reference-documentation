@@ -88,7 +88,7 @@ include::./common_docinfo_vars.adoc[]
 :rke2-url: https://www.suse.com/products/rancher-kubernetes-engine/
 :rke2-support-matrix: https://www.suse.com/suse-rke2/support-matrix/all-supported-versions/
 :rke2-docs: https://docs.rke2.io/
-:rke2-version: v1.27.8+rke2r1
+:rke2-version: v1.27.12+rke2r1
 
 :rancher: Rancher
 :rancher-full: Rancher by SUSE
@@ -130,8 +130,12 @@ include::./common_docinfo_vars.adoc[]
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
 :sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
 :sles-minimal-download-url: https://www.suse.com/download/sles/
+:suse-contact-url: https://www.suse.com/contact/
 :sles-minimal-file-name: SLES15-SP5-Minimal-VM.x86_64-Cloud-GM.qcow2
 :sles-minimal-saved-name: sles-{sles-version}-{sles-sp}-minimal
+:rmt-name-full: SUSE Repository Mirroring Tool
+:scc-name-full: SUSE Customer Center
+
 // -
 // Partner/Project Components
 // -
@@ -358,12 +362,12 @@ The author wants to acknowledge contributions to this guide by:
 
 Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
-.*{rancher} installation*
+* *{rancher} server installation*
 //
 +
 {rancher} can be running in a public cloud provider or on-premises, but needs needs to have access to the infrastructure provider for the {rke2} cluster.
 
-. A {harvester} cluster 
+* *{harvester} cluster*
 //
 +
 {harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. 
@@ -372,12 +376,12 @@ See {harvester-cloud-creds-url}[for more information].
 +
 [NOTE]
 ====
-We have selected the {harvester} infrastructure provider because of its seamless integration with {rancher}, and its ability to provide a low-cost, cloud-like Infrastructure as a Service experience for its users. 
-If you don't have a {harvester} cluster readily available, {rke2} can be deployed on another infrastructure provider, or a hosted {k8s} can be used.
+We have selected the {harvester} infrastructure provider because of its seamless integration with {rancher}, and its ability to provide a low-cost, cloud-like Infrastructure-as-a-Service experience for its users. 
+If you don't have a {harvester} cluster readily available, {rke2} can be deployed on another infrastructure provider, or a hosted {k8s} can be used, though some of the procedures outlined here will be different.
 ====
 +
 
-*At least one dedicated IP address*
+* *At least one dedicated IP address*
 //
 +
 You will need to dedicated one IP address to the {jupyterhub} service.
@@ -386,62 +390,38 @@ All IP addresses will be managed by the {metallb} load balancer.
 +
 [TIP]
 ====
-In this design, {jupyterhub} is behind a corporate firewall/NAT router and uses a non-routable IP address. 
-This means our clients will need access to the public internet to resolve the {jupyterhub} fully qualified domain name through {route53-name} AND VPN access to connect to our {jupyterhub} service's IP address.
+In our demonstration deployment, our {jupyterhub} installation is behind a corporate firewall/NAT router.
+Thus we are using non-routable IP addresses. 
+This means our clients will need to have access to the public internet to resolve the {jupyterhub} fully qualified domain name through {route53-name} *AND* VPN access to connect to our {jupyterhub} service's IP address.
 ====
 +
 
-*TLS certificate and private key*
+* *TLS certificate and private key*
 //
 +
 A TLS certificate and private key from a publicly recognized provider are required to provide full HTTPS security when connecting to this deployment of {jupyterhub}. 
 This document will include guidance for obtaining these items from {lets-encrypt}. 
-//{lets-encrypt} will require that you provide the credentials to make changes to a publicly resolvable DNS domain, therefore you must also possess a publicly registered DNS domain as well as the API credentials to add and remove records from it. 
 +
-//[NOTE]
-//====
-//While it is not recommended, this deployment can be completed with HTTP communication, sacrificing security for simplicity. 
-//This should never be done in production, or otherwise valuable, environments.
-//====
+* *Publicly resolvable DNS domain name*
 +
-[IMPORTANT]
-====
-It is out of the scope of this document to cover the process for providing TLS certificates from a private CA.
-====
-+
-. A publicly resolvable DNS domain name
-
 This guide will focus on using {route53-name} to provide a Fully Qualified Domain Name (FQDN) for the {jupyterhub} service. 
-You can easily obtain a domain name from most public DNS providers, for a small fee. 
-Let's Encrypt will require that you provide API credentials that can add and remove records from your DNS domain to verify your ownership of it. 
+Let's Encrypt will require that you provide API credentials that allow adding and removing records from your DNS domain.
+This is to verify your ownership of the domain. 
 See this link:{lets-encrypt-dns-providers-url}[blog post] for a general list of supported DNS providers.
+You can easily obtain a domain name from most public DNS providers for a small fee, though using a provider other than {route53-name} will mean some of the procedures outlined here will be different.
 +
 [CAUTION]
 ====
-It is HIGHLY recommended that the API credentials provided possess no additional capabilities beyond adding/removing records from the domain.
-====
-////
-.*Required software is installed on each node of the {rke2} cluster*
-//
-+
-[NOTE]
-====
-This requirement can only be completed after the {rke2} cluster has been deployed. 
-After deploying the {rke2} cluster, you can return here to complete this step.
+It is HIGHLY recommended that the API credentials used in this procedure possess no additional capabilities beyond adding/removing records from the specified domain.
 ====
 +
-Longhorn leverages several open source software projects, including open-iscsi and nfs-client, for core functionality. 
-You must ensure that each node in the {rke2} cluster meets link:https://longhorn.io/docs/1.5.3/deploy/install/#installation-requirements[these requirements].
+* *RMT server or SUSE Linux subscription license*
 +
-Most of the required software can be installed on {sles-full} with this command:
-+
-[source, console]
-----
-sudo zypper in coreutils jq nfs-client util-linux open-iscsi
-----
-////
+You will be deploying multiple VMs with {sles-full}. 
+In order to obtain the proper updates and software, you will need to register these VMs through a {rmt-name-full} or with a {scc-name-full}.
+If you do not have access to either, use link:{suse-contact-url} to request an evaluation license.
 
-== Set up your environment
+//== Set up your environment
 
 
 == Overview
@@ -463,9 +443,9 @@ We'll navigate the journey step-by-step, covering:
 
 * Deploying {rke2-full} on {harvester}: You'll leverage {rancher-full} for {k8s} application and cluster management. 
 
-* Configuring {longhorn} for for highly available, persistent storage.
+* Configuring {longhorn} to provide highly available, persistent storage.
 
-* Configuring {metallb}: This versatile load balancer provides virtual IP addresses that ensures traffic to your {jupyterlab} server instances isn't interrupted, even after a node failure.
+* Configuring {metallb}: This versatile load balancer manages virtual IP addresses that ensures traffic to your {jupyterlab} server instances isn't interrupted, even in the face of VM/host failures.
 
 * Installing {jupyterhub}: Using its Helm chart, we'll seamlessly integrate {jupyterhub} within your RKE2 cluster, equipping you with a dynamic platform for interactive data analysis and collaboration.
 
@@ -493,13 +473,13 @@ For this procedure, we have named this Cloud Configuration Template `{harvester-
 +
 [NOTE]
 ====
-If you prefer, configure a more secure password for the root and sles users.
+If you prefer, update the cloud-config tempalte below to configure a more secure password for the root and sles users.
 ====
 +
 [IMPORTANT]
 ====
-Uncomment and update ONLY ONE the `SUSEConnect` commands below to register the VM operating systems either via an RMT server URL or with a subscription code (i.e. regcode). 
-Be sure to remove the other command.
+Uncomment and update ONLY ONE the `SUSEConnect` commands below to register the VM operating systems either via an {rmt-name-full} server URL or with a subscription license (i.e. regcode). 
+Be sure to remove the other `SUSEConnect` command.
 ====
 +
 [source, console, subs="attributes+"]
@@ -524,8 +504,13 @@ runcmd:
 
 == Deploy {rke2-full} on {harvester}
 
-Follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to create an {rke2} cluster using {rancher} and {harvester}.
-
+. *Open the {rancher} UI* and follow the instructions at link:{harvester-create-rke2-cluster-url}[this URL] to create an {rke2} cluster on {harvester}.
++
+[TIP]
+====
+When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you can first unchecked that box, selected the correct user data, then checked that box again.
+====
++
 [NOTE]
 ====
 In creating the {rke2} cluster, we have used these specific parameters:
@@ -539,7 +524,8 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Memory (per node): `16` (8 can be used for smaller deployments)
 * Namespace: `{harvester-namespace}`
 * SSH User: `sles`
-* Image: {sles-minimal-saved-name}
+* Image: `{sles-minimal-saved-name}`
+* Disk: `100GiB` (50GiB minimum)
 * Network: (Select a network to which all {jupyterlab} clients can connect)
 
 *Click "Show Advanced"* 
@@ -554,18 +540,14 @@ In creating the {rke2} cluster, we have used these specific parameters:
 *Cluster Configuration pane*
 
 *Basics tab*
+
 * Kubernetes Version: {rke2-version}
 ====
-
-[TIP]
-====
-When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you can first unchecked that box, selected the correct user data, then checked that box again.
-====
-
-After the {rke2} cluster has been deployed, its status will become `Active`. 
++
+. After the {rke2} cluster has been deployed, its status will become `Active`. 
 This can take five to ten minutes, depending on the performance of the underlying infrastructure. 
 
-Please continue this procedure only after the cluster status shows `Active`.
+Please continue this procedure only after the cluster status shows `Active` image::rancher-active-jupyterhub-cluster.png[Rancher Active JupyterHub Cluster]
 
 == Reboot the {rke2} cluster nodes
 
@@ -632,7 +614,7 @@ This part of the procedure will create a {rancher-kubectl-shell-variables-file} 
 This is necessary every time the {rancher-kubectl-shell} is opened.
 ====
 
-. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png
+. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
 [source, console, subs="attributes+"]
@@ -733,7 +715,7 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 
 Add the dedicated IP address configuration to {metallb}:
 
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
 
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
@@ -928,7 +910,7 @@ After installation, you will create the TLS certificate and private key for your
 Install the {cert-manager} Custom Resources:
 +
 
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
 
 . When the {rancher-kubectl-shell} is ready, execute this command:
 +
@@ -965,7 +947,7 @@ After the final message `SUCCESS: helm install...` is displayed, you can close t
 
 == Create the {jupyterhub} TLS certificate and private key through {cert-manager}
 
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
 +
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
@@ -1221,7 +1203,7 @@ The instructions below will guide you through the process of creating a config.y
 
 Create the config.yaml file that will point to the secret containing TLS certificate and private key. 
 
-. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon 
+. While viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
 +
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
@@ -1357,7 +1339,7 @@ git clone https://github.com/jupyter/notebook.git
 . After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook`
 . Open the file `{jupyter-notebooks-running-code-filename}` by double-clicking on it
 . From the top menu, select `Edit` -> `Clear Outputs of All Cells`
-. You can press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab
+. You can press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab image::juypterhub-run-cell-and-advance.png[JupyterHub Run Cell and Advance]
 . Continue to work with this notebook as long as you'd like to or until you feel your new {jupyterhub} installation is working correctly.
 
 
