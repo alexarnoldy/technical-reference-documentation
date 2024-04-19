@@ -114,7 +114,7 @@ include::./common_docinfo_vars.adoc[]
 
 :harvester-upload-image-url: https://docs.harvesterhci.io/v1.3/upload-image
 :harvester-create-rke2-cluster-url: https://docs.harvesterhci.io/v1.3/rancher/node/rke2-cluster/#create-rke2-kubernetes-cluster
-:harevester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
+:harvester-cloud-configuration-url: https://docs.harvesterhci.io/v1.3/vm/index#cloud-configuration
 :harvester-namespace: default
 :harvester-cloud-config-template-name: rke2-ready
 :virtualization-management: Virtualization Management
@@ -370,7 +370,8 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 * *{harvester} cluster*
 //
 +
-{harvester} will be the infrastructure provider for the {rke2-full} cluster. {rancher} must be configured with cloud credentials with full access the {harvester}. 
+{harvester} will be the infrastructure provider for the {rke2-full} cluster. 
+{rancher} must be configured with cloud credentials with full access the {harvester}. 
 See {harvester-cloud-creds-url}[for more information].
 //
 +
@@ -464,7 +465,7 @@ In uploading the {sles-minimal} image to {harvester}, we used these parameters:
 * Name: `{sles-minimal-saved-name}`
 ====
 
-Create a `Cloud Config Template` based on link:{harevester-cloud-configuration-url}[these instructions].
+Create a `Cloud Config Template` based on link:{harvester-cloud-configuration-url}[these instructions].
 +
 [NOTE]
 ====
@@ -473,7 +474,7 @@ For this procedure, we have named this Cloud Configuration Template `{harvester-
 +
 [NOTE]
 ====
-If you prefer, update the cloud-config tempalte below to configure a more secure password for the root and sles users.
+If you prefer, update the cloud-config template below to configure a more secure password for the root and sles users.
 ====
 +
 [IMPORTANT]
@@ -508,7 +509,8 @@ runcmd:
 +
 [TIP]
 ====
-When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. To ensure a consistent experience, you may first unchecked that box, selected the correct user data, then checked that box again.
+When selecting the `User Data` template, some browsers won't pull in the correct data if the `Install guest agent` checkbox is selected. 
+To ensure a consistent experience, you may first unchecked that box, selected the correct user data, then checked that box again.
 ====
 +
 [NOTE]
@@ -591,7 +593,6 @@ DNSZONE
 EMAIL_ADDR
 FQDN
 JUPYTERHUB_EXTERNAL_IP
-
 ----
 +
 .. Populate the `Value` for each column based on the following guidance:
@@ -635,18 +636,11 @@ Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<
 Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn} with {rancher-full}.
 Be sure to return to this document to edit the *Longhorn Default Settings*.
 
-////
-[TIP]
-====
-It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
-However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
-====
-////
-
 [NOTE]
 ====
 In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
-This will suit our needs but will sacrifice higher data redundancy. The general guidance here is to use two or three volume replicas, but always one less than the number of nodes in the {rke2} cluster.
+This will suit our needs but will sacrifice higher data redundancy. 
+The general guidance here is to use two or three volume replicas, but always one less than the number of nodes in the {rke2} cluster.
 ====
 
 . To configure Longhorn, we have used these specific parameters:
@@ -762,7 +756,8 @@ EOF
 +
 [TIP]
 ====
-There are many ways to specify the desired IP address range. See the link:{metallb-ipaddress-config-url}[{metallb} documentation] for more information.
+There are many ways to specify the desired IP address range. 
+See the link:{metallb-ipaddress-config-url}[{metallb} documentation] for more information.
 ====
 +
 . Paste this command into the {rancher-kubectl-shell}:
@@ -884,7 +879,7 @@ curl http://${EXTERNAL_IP}:8080 2>&1 | grep "Thank you"
 +
 .. An HTML encoded output should be displayed that includes the phrase "Thank you for using nginx."
 +
-. When finished with testing, delete the deployment and service 
+. When finished with testing, delete the deployment and service. 
 +
 [source, console, subs="attributes+"]
 ----
@@ -929,7 +924,8 @@ Deploy {cert-manager} based on the following instructions:
 +
 [NOTE]
 ====
-The version used for this project is {cert-manager-version}. If this version isn't displayed at the top, select it from the list on the right.
+The version used for this project is {cert-manager-version}. 
+If this version isn't displayed at the top, select it from the list on the right.
 ====
 +
 
@@ -960,11 +956,6 @@ See the cert-manager documentation at link:{cert-manager-dns01-rout53-doc}[for m
 ====
 +
 . Run the following command to ensure the fully qualified domain name of the {jupyterhub-deployed-name} service resolves to its dedicated IP address.
-+
-//[IMPORTANT]
-//====
-//If the follow command fails with the error that the {rancher-kubectl-shell-variables-file} doesn't exist, return to the section <<Create the variables file>> to recreate it.
-//====
 +
 [source, console, subs="attributes+"]
 ----
@@ -1172,10 +1163,6 @@ EOF
 kubectl get -n jupyterhub certificates,secrets
 ----
 
-
-
-
-
 == Deploy {jupyterhub} on {rke2-full}
 
 [NOTE]
@@ -1188,10 +1175,11 @@ See the {jupyterhub-auth-doc}[{jupyterhub} authentication documentation] for inf
 [IMPORTANT]
 ====
 Be sure you have met the requirements outlined in the <<Prerequisites>> section before preceding with the installation of {jupyterhub}.
-Specifically, you must possess a DNS domain registered with a public DNS provider. In this guide we will use the Fully Qualified Domain Name of {public-fqdn}
+Specifically, you must possess a DNS domain registered with a public DNS provider. 
+In this guide we will use the Fully Qualified Domain Name of {public-fqdn}.
 ====
 
-Follow the instructions at the link:{jupyterhub-installation-doc}[{jupyterhub} installation documentation] to install {jupyterhub} on {rke2} using its Helm chart
+Follow the instructions at the link:{jupyterhub-installation-doc}[{jupyterhub} installation documentation] to install {jupyterhub} on {rke2} using its Helm chart.
 
 [NOTE]
 ====
@@ -1314,7 +1302,7 @@ helm upgrade --cleanup-on-fail \
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
-To validate the operation of your new {jupyterhub} installation, we will clone the {jupyterlab-provider} {github-name} repository, then load and run one of its notebooks
+To validate the operation of your new {jupyterhub} installation, we will clone the {jupyterlab-provider} {github-name} repository, then load and run one of its notebooks.
 
 . Connect to your deployed {jupyterhub} fully qualified domain name. In our example it is https://{public-fqdn}.
 
@@ -1333,10 +1321,10 @@ If an identity provider hasn't been specifically integrated with {jupyterhub}, i
 git clone https://github.com/jupyter/notebook.git
 ----
 +
-. After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook` image::jupyterhub-notebook-file-browser.png[JupyterLab notebook in File Browser]
-. Open the file `{jupyter-notebooks-running-code-filename}` by double-clicking on it
-. From the top menu, select `Edit` -> `Clear Outputs of All Cells`
-. You may press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab image::juypterhub-run-cell-and-advance.png[JupyterHub Run Cell and Advance]
+. After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook` image::jupyterhub-notebook-file-browser.png[JupyterLab notebook in File Browser].
+. Open the file `{jupyter-notebooks-running-code-filename}` by double-clicking on it.
+. From the top menu, select `Edit` -> `Clear Outputs of All Cells`.
+. You may press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab image::juypterhub-run-cell-and-advance.png[JupyterHub Run Cell and Advance].
 . Continue to work with this notebook as long as you'd like to or until you feel your new {jupyterhub} installation is working correctly.
 
 
