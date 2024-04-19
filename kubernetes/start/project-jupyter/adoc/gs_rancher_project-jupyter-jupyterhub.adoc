@@ -553,21 +553,21 @@ Please continue this procedure only after the cluster status shows `Active` imag
 
 After the {rke2} cluster has been deployed, each of the VMs in the cluster will need to be rebooted. 
 This is required to activate the "kernel-default" kernel. 
-{longhorn} cannot operate with the minimal "kernel-default-base" kernel.
+{longhorn} cannot operate with the minimal "kernel-default-base" kernel that comes with the {sles-minimal-file-name} image.
 
 . In the {rancher} UI, select {virtualization-management}, select the {harvester} cluster, then select `Virtual Machines`
-. Select the three dots to the right of the first virtual machine in {jupyterhub} cluster, then select `Restart`
+. Select the three dots to the right of the first virtual machine in {jupyterhub} cluster, then select `Restart` image::rancher-restart-vm.png[Rancher Restart VM]
 . Wait for the virtual machine to show `Active` again, and for it to show its IP address, then repeat with the next virtual machine in the cluster
 . After the final virtual machine has completed its restart return to {cluster-management} and verify the {jupyterhub} cluster is `Active`
 
 == Create the variables ConfigMap
-Certain information is needed multiple times throughout the build process and even deployment process.
+Certain information is needed multiple times throughout this deployment process.
 This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
 
 . Create the `variables` configmap in the `cattle-system` namespace:
-.. In the {rancher} UI, select the Home icon from the menu on the left
+.. In the {rancher} UI, select the Home icon image::rancher-home-icon.png[Rancher Home Icon]from the menu on the left
 .. Select the {jupyterhub} cluster
-.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces`
+.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
 .. Select `Storage`, then `ConfigMaps`
 .. Click the `Create` button on the top right of the window
 .. Select the `cattle-system` namespace
@@ -578,7 +578,8 @@ This information can be stored in environment variables and recalled as needed, 
 variables
 ----
 +
-.. Copy all of these keys into the first cell in the `Key` column. Each key will automatically get populated into its own cell.
+.. Copy all of these keys into the first cell in the `Key` column. 
+Each key will automatically get populated into its own cell.
 +
 [source, console]
 ----
@@ -597,8 +598,8 @@ JUPYTERHUB_EXTERNAL_IP
 +
 * AWS_ACCESS_KEY_ID is the access key for the {aws-name-full} account that can update records in the {route53-name} DNS zone. E.g. "AK1231231231231231"
 *  AWS_REGION is the default region for the {aws-name-full} account. E.g. "us-west-2"
-*  DEFAULT_IP_RANGE_START is an OPTIONAL, setting to allow for additional MetalLB IPs. 
-*  DEFAULT_IP_RANGE_END is an OPTIONAL, setting to allow for additional MetalLB IPs.
+*  DEFAULT_IP_RANGE_START is an OPTIONAL setting to allow for additional MetalLB IPs. 
+*  DEFAULT_IP_RANGE_END is an OPTIONAL setting to allow for additional MetalLB IPs.
 *  DNSZONE is the name of the DNS domain. E.g. "susealliances.com"
 *  EMAIL_ADDR is a valid email address to use when creating the Let's Encrypt certificate.
 *  FQDN is the fully qualified domain name to reach the {jupyterhub} service. E.g. "jupyterhub.susealliances.com"
@@ -614,7 +615,7 @@ This part of the procedure will create a {rancher-kubectl-shell-variables-file} 
 This is necessary every time the {rancher-kubectl-shell} is opened.
 ====
 
-. If the {rancher-kubectl-shell} isn't already open and "Connected", while viewing the {jupyterhub-deployed-name} cluster, select the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell]
+. If the {rancher-kubectl-shell} isn't already open and "Connected", you can open it while viewing the {jupyterhub-deployed-name} cluster by selecting the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell] at the top of the window.
 . When the {rancher-kubectl-shell} is ready, run the following command:
 +
 [source, console, subs="attributes+"]
@@ -622,7 +623,7 @@ This is necessary every time the {rancher-kubectl-shell} is opened.
 kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 
-. If you want to, you can pull the border between the {rancher-kubectl-shell} and the main {rancher} UI down until you need the shell again.
+. If you want to, you can pull the border between the {rancher-kubectl-shell} image::rancher-pull-button.png[Rancher Pull Button] and the main {rancher} UI down until you need the shell again.
 
 == Deploy {longhorn} on {rke2-full} 
 
@@ -634,16 +635,18 @@ Be sure all nodes in the {rke2} cluster meet the requirements outlined in the <<
 Follow the instructions at link:{longhorn-installation-doc}[this URL] to deploy {longhorn} with {rancher-full}.
 Be sure to return to this document to edit the *Longhorn Default Settings*.
 
+////
 [TIP]
 ====
 It is beyond the scope of this document to describe managing the {rke2} cluster with third party tools (e.g. kubectl or K9s). 
 However, if you have a workstation that meets the requirements described in link:{longhorn-env-check-script-doc}[this document], you can use the script contained therein to verify the {longhorn} nodes meet the requirements before deploying {longhorn}
 ====
+////
 
 [NOTE]
 ====
 In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
-This will suit our needs but will sacrifice higher data redundancy. The general guidance here is to use one or two volume replicas, but always one less than the number of nodes in the {rke2} cluster.
+This will suit our needs but will sacrifice higher data redundancy. The general guidance here is to use two or three volume replicas, but always one less than the number of nodes in the {rke2} cluster.
 ====
 
 To configure Longhorn, we have used these specific parameters:
