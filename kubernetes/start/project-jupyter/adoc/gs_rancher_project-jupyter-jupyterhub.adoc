@@ -1114,7 +1114,7 @@ kubectl logs -n cert-manager -l app=cert-manager
 Proceed to the next section only after the certificate shows a `READY` status of `True` 
 ====
 +
-. Edit the `letsencrypt-issuer` to change from the {lets-encrypt} staging server to the production server:
+. After the certificate has been successfully issued, edit the `letsencrypt-issuer` to change from the {lets-encrypt} staging server to the production server:
 +
 [source, console, subs="attributes+"]
 ----
@@ -1182,7 +1182,7 @@ kubectl get -n jupyterhub certificates,secrets
 ====
 It is beyond the scope of this document to configure {jupyterhub} to use an authentication method. 
 By default, {jupyterhub} will allow any user to log in with or without a password.
-See the {jupyterhub-auth-doc}[{juyterhub} authentication documentation] for information on integrating {jupyterhub} with a central authencation application.
+See the {jupyterhub-auth-doc}[{jupyterhub} authentication documentation] for information on integrating {jupyterhub} with a central authencation application.
 ====
 
 [IMPORTANT]
@@ -1316,16 +1316,16 @@ helm upgrade --cleanup-on-fail \
 
 To validate the operation of your new {jupyterhub} installation, we will clone the {jupyterlab-provider} {github-name} repository, then load and run one of its notebooks
 
-. Connect to your deployed {jupyterhub} fully qualified domain name. In our example it is {public-fqdn}.
+. Connect to your deployed {jupyterhub} fully qualified domain name. In our example it is https://{public-fqdn}.
 
-. Log in with your user name
+. Log in with your username
 +
 [NOTE]
 ====
-If an identity provider hasn't been specifically integrated with {jupyterhub}, it will accept any user name as a log in and does not require a password.
+If an identity provider hasn't been specifically integrated with {jupyterhub}, it will accept any username as a log in and does not require a password.
 ====
 +
-. From the {jupyterlab} Launcher, select the `Terminal` session
+. From the {jupyterlab} Launcher, select the `Terminal` session image::jupyterhub-terminal.png[JupyterLab Terminal]
 . When the session is ready, clone the {jupyterlab-provider} repository:
 +
 [source, console, subs="attributes+"]
@@ -1333,7 +1333,7 @@ If an identity provider hasn't been specifically integrated with {jupyterhub}, i
 git clone https://github.com/jupyter/notebook.git
 ----
 +
-. After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook`
+. After the repository has been downloaded, use the file browser tool at the top left of the window to navigate to `notebook` -> `docs` -> `source` -> `examples` -> `Notebook` image::jupyterhub-notebook-file-browser.png[JupyterLab notebook in File Browser]
 . Open the file `{jupyter-notebooks-running-code-filename}` by double-clicking on it
 . From the top menu, select `Edit` -> `Clear Outputs of All Cells`
 . You may press "Shift+Enter" to run the selected cell and advance to the next cell, or click the equivilent button at the top of the tab image::juypterhub-run-cell-and-advance.png[JupyterHub Run Cell and Advance]
@@ -1349,9 +1349,9 @@ git clone https://github.com/jupyter/notebook.git
 // - Next steps (unordered list of 2-4 further learning resources)
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-In this document you have gone through the process of configuring {harvester} to create the VMs needed for your {jupyterhub} deployment, deployed {rke2-full} onto those VMs, then added {longhorn}, {metal-lb}, and {cert-manager}.
-Finally, you have installed {jupypterhub} and verified that the installation is working correctly. 
-Several customizations are outside of the scope of this document. 
+In this document you have gone through the process of configuring {harvester} to create the VMs needed for your {jupyterhub} deployment, deployed {rke2-full} onto those VMs, then added {longhorn}, {metallb}, and {cert-manager}.
+Finally, you have installed {jupyterhub} and verified that the installation is working correctly. 
+Additional customizations are outside of the scope of this document. 
 For information on authenication provider integration see {jupyterhub-auth-doc}[this document].
 For information on {k8s} specfic customizations see {jupyterhub-kubernetes-customizations-doc}[this document]. 
 For general configuration information see {jupyterhub-docs}[this document].
