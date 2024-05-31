@@ -47,6 +47,7 @@ include::./common_docinfo_vars.adoc[]
 :sles-full: SUSE Linux Enterprise Server
 :sles-version: 15
 :sles-sp: 5
+:sles-kernel-version: 5.14.21-150500.55.49.1
 :sles-sp-full: SP{sles-sp}
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
@@ -462,10 +463,10 @@ This information can be stored in environment variables and recalled as needed, 
 
 [IMPORTANT]
 ====
-Run all commands on your build host.
+Run the following commands on your build node.
 ====
 
-. Log in to your build host.
+. Log in to your build node.
 
 . Create the `/tmp/build-variables.sh` file.
 +
@@ -478,6 +479,7 @@ export SLE_SP=""
 export DRIVER_VERSION=""
 export OPERATOR_VERSION=""
 export CUDA_VERSION=""
+export KERNEL_VERSION=""
 EOF
 ----
 
@@ -495,16 +497,25 @@ EOF
 +
 Find the latest "Data Center Driver for Linux x64" version for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 
-* `OPERATOR_VERSION`: {nvidia-op} version
-//
-+
-Find the associated {nvidia-op-url}platform-support.html[{nvidia-op}] version.
+* `OPERATOR_VERSION`: The associated {nvidia-op-url}platform-support.html[{nvidia-op}] version.
 
-* `CUDA_VERSION`: the {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
+* `CUDA_VERSION`: The {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
 //
 +
 The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
-
+//+
+* `KERNEL_VERSION`: Use the following command to find the Linux kernel version installed on all of the GPU-enabled worker nodes:
++
+[source, console, subs="attributes+"]
+----
+sudo zypper se -s --installed-only kernel-default
+----
++
+[NOTE]
+====
+All GPU-enabled worker nodes should have the same {sles} version and service pack version installed, as well as the same kernel version.
+====
++
 --
 +
 For example, your `/tmp/build-variables.sh` file should look something like:
@@ -517,6 +528,8 @@ export SLE_SP="{sles-sp}"
 export DRIVER_VERSION="{nvidia-drv-version}"
 export OPERATOR_VERSION="{nvidia-op-version}"
 export CUDA_VERSION="{nvidia-cuda-version}"
+export KERNEL_VERSION="{sles-kernel-version}"
+
 ----
 
 . Source your `/tmp/build-variables.sh` file to set the variables in your current session environment.
