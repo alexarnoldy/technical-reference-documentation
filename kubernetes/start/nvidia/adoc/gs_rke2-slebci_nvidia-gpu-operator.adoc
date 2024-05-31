@@ -230,6 +230,7 @@ The author wants to acknowledge contributions to this guide by:
 
 Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
+////
 * *Build host*
 //
 +
@@ -339,17 +340,64 @@ You do not need to install Kubectl or Helm if you plan to deploy the {nvidia-drv
 Verify that your build host can access and download base container images from the {sle-bci-registry}[SUSE Container Images Registry].
 
 --
+////
 
-* Kubernetes cluster
+
+* {rke2-full} Kubernetes cluster
 //
 +
-Your Kubernetes cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
+Your {rke2} Kubernetes cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
 +
 --
-. Containers and {nvidia-org} Compute modules
++
+. Select one worker node as the build node.
+This node will have additional software installed for building the {nvidia} driver container image.
++
+. Podman 
 //
 +
-Enable the Containers module and {nvidia-org} Compute module on each worker node.
+Install Podman on the build node:
++
+[source, console]
+----
+sudo zypper install podman 
+----
++
+. Git
+//
++
+{git-url}[Git] is a free and open source, distributed version control system that simplifies access to and management of source code.
+//
++
+Install core Git tools on the build node:
++
+[source, console]
+----
+sudo zypper install git-core
+----
+
+. {sles-full} modules
+//
++
+Enable the Desktop Applications, and Development Tools {sles-docs-modules}[modules] on the build node:
++
+[source, console, subs="attributes+"]
+----
+VER={sles-version}
+SP={sles-sp}
+sudo SUSEConnect -p sle-module-desktop-applications/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-development-tools/$\{VER\}.$\{SP\}/x86_64
+----
++
+[NOTE]
+====
+Be sure to update the `VER` and `SP` variables with the {sles} version and service pack of your worker nodes.
+====
++
+. Containers, and {nvidia-org} Compute {sles-docs-modules}[modules]:
+//
++
+Enable the Containers, and {nvidia-org} Compute modules on each GPU-enabled worker node:
 +
 [source, console, subs="attributes+"]
 ----
@@ -358,16 +406,11 @@ SP={sles-sp}
 sudo SUSEConnect -p sle-module-containers/$\{VER\}.$\{SP\}/x86_64
 sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
 ----
-+
-[NOTE]
-====
-Be sure to update the `VER` and `SP` variables with the {sles} version and service pack that you are using.
-====
 
 . {nvidia-org} software
 //
 +
-Install required {nvidia-org} software packages on each node.
+Install required {nvidia-org} software packages on each GPU-enabled worker node:
 +
 [source, console]
 ----
@@ -377,16 +420,6 @@ sudo zypper install \
   libnvidia-container1 \
   nvidia-container-runtime \
   sle-module-NVIDIA-compute-release
-----
-
-. Podman 
-//
-+
-Install Podman on at least one of the worker nodes.
-+
-[source, console]
-----
-sudo zypper install podman 
 ----
 
 . {rke2-full} ({rke2})
@@ -399,12 +432,22 @@ You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or
 
 --
 
-* Access to a container image registry from the build host and from the {rke2} cluster.
+. Access to SUSE Container Images
 //
 +
-Using a container registry streamlines deployment of your GPU-enabled container across all Kubernetes worker nodes.
+Verify that your build host can access and download base container images from the {sle-bci-registry}[SUSE Container Images Registry].
+The following command should return several lines that include "SUSE":
++
+[source, console, subs="attributes+"]
+----
+curl https://registry.suse.com/ | grep SUSE
+----
+
+* Access to a container image registry from the {rke2} cluster.
+//
++
+A container image registry where the the newly built {nvidia} driver container image will be saved, and from where it will be pulled when deployed across the GPU-enabled Kubernetes worker nodes.
 This can be a public or a private registry, on-premises or hosted remotely.
-But you must be able to push your container images to the registry from your build host and retrieve them on your cluster.
 +
 [TIP]
 ====
