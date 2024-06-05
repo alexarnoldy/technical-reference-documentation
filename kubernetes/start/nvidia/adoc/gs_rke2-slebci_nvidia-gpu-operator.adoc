@@ -47,7 +47,7 @@ include::./common_docinfo_vars.adoc[]
 :sles-full: SUSE Linux Enterprise Server
 :sles-version: 15
 :sles-sp: 5
-:sles-kernel-version: 5.14.21-150500.55.49.1
+:sles-kernel-version: 5.14.21-150500.55.65.1
 :sles-sp-full: SP{sles-sp}
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
@@ -59,8 +59,10 @@ include::./common_docinfo_vars.adoc[]
 :sle-bci-registry: https://registry.suse.com/
 :sle-bci-url: {sle-bci-registry}bci/bci-base-{sles-version}sp{sles-sp}/index.html
 
-:golang-version: 1.18
-:golang-base: 118
+//:golang-version: 1.18
+:golang-version: 1.22
+//:golang-base: 118
+:golang-base: 122
 :sle-bci-golang-url: {sle-bci-registry}bci/golang{golang-base}
 
 :scc-full: SUSE Customer Center
@@ -81,15 +83,15 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-url: https://nvidia.com
 :nvidia-dc-url: {nvidia-url}/en-us/data-center/
 :nvidia-drv: {nvidia-org} GPU Driver
-:nvidia-drv-version: 535.104.05
+:nvidia-drv-version: 550.54.15
 :nvidia-drv-url: https://www.nvidia.com/download/index.aspx
 :nvidia-op: {nvidia-org} GPU Operator
-:nvidia-op-version: v23.6.1
+:nvidia-op-version: v24.3.0
 :nvidia-op-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/
 :nvidia-op-platforms-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html
 :nvidia-cuda: {nvidia-org} CUDA Toolkit
 :nvidia-cuda-url: https://developer.nvidia.com/cuda-toolkit
-:nvidia-cuda-version: 12.2.2
+:nvidia-cuda-version: 12.4.1
 :nvidia-helm-url: https://helm.ngc.nvidia.com/nvidia
 :nvidia-gitlab-url: https://gitlab.com/nvidia
 :nvidia-gitlab-drv-url: {nvidia-gitlab-url}/container-images/driver/
@@ -380,7 +382,7 @@ sudo zypper install git-core
 . {sles-full} modules
 //
 +
-Enable the Desktop Applications, and Development Tools {sles-docs-modules}[modules] on the build node:
+Enable the Desktop Applications, and Development Tools {sles-docs-modules}[modules] on the *build node only*:
 +
 [source, console, subs="attributes+"]
 ----
@@ -398,7 +400,7 @@ Be sure to update the `VER` and `SP` variables with the {sles} version and servi
 . Containers, and {nvidia-org} Compute {sles-docs-modules}[modules]:
 //
 +
-Enable the Containers, and {nvidia-org} Compute modules on each GPU-enabled worker node:
+Enable the Containers, and {nvidia-org} Compute modules on *each GPU-enabled worker node*:
 +
 [source, console, subs="attributes+"]
 ----
@@ -411,7 +413,7 @@ sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
 . {nvidia-org} software
 //
 +
-Install required {nvidia-org} software packages on each GPU-enabled worker node:
+Install required {nvidia-org} software packages on *each GPU-enabled worker node*:
 +
 [source, console]
 ----
@@ -420,6 +422,9 @@ sudo zypper install \
   libnvidia-container-tools \
   libnvidia-container1 \
   nvidia-container-runtime \
+  nvidia-container-toolkit \
+  nvidia-container-toolkit-base \
+  sle-module-NVIDIA-compute \
   sle-module-NVIDIA-compute-release
 ----
 
@@ -468,7 +473,7 @@ Run the following commands on your build node.
 
 . Log in to your build node.
 
-. Create the `/tmp/build-variables.sh` file.
+. Create the `/tmp/build-variables.sh` file:
 +
 [source, console]
 ----
@@ -496,19 +501,29 @@ EOF
 //
 +
 Find the latest "Data Center Driver for Linux x64" version for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
-
+Also, take note of the *CUDA Toolkit* version.
++
 * `OPERATOR_VERSION`: The associated {nvidia-op-url}platform-support.html[{nvidia-op}] version.
-
++
 * `CUDA_VERSION`: The {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
 //
 +
-The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
-//+
-* `KERNEL_VERSION`: Use the following command to find the Linux kernel version installed on all of the GPU-enabled worker nodes:
+** Use the following command to find the patch versions available for the required CUDA software:
+//
 +
 [source, console, subs="attributes+"]
 ----
-sudo zypper se -s --installed-only kernel-default
+sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "12.4" | grep base-ubi8
+----
++
+*** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
+//The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
+//+
+* `KERNEL_VERSION`: Use the following command to find the Linux kernel `Version` installed `i+` (likely at the top of the list) on all of the GPU-enabled worker nodes:
++
+[source, console, subs="attributes+"]
+----
+sudo zypper search --details --installed-only kernel-default
 ----
 +
 [NOTE]
@@ -548,7 +563,7 @@ To recreate them, simply source the build-variables file again.
 
 == Building the container image
 
-. On your build host, make sure you have sourced your `/tmp/build-variables.sh` file to set your environment variables.
+. On your build node, make sure you have sourced your `/tmp/build-variables.sh` file to set your environment variables.
 //
 +
 You can verify your variables with:
@@ -560,7 +575,8 @@ REGISTRY=${REGISTRY}
 SLE_VERSION=${SLE_VERSION}
 SLE_SP=${SLE_SP}
 DRIVER_VERSION=${DRIVER_VERSION}
-CUDA_VERSION=${CUDA_VERSION}" 
+CUDA_VERSION=${CUDA_VERSION} 
+KERNEL_VERSION=${KERNEL_VERSION}"
 ----
 
 . Clone the {nvidia-org} driver GitLab repository and change to the `driver/{nvidia-gitlab-drv-dir}` directory.
@@ -574,12 +590,20 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 
 .. Make a backup of `Dockerfile` before modifying the original.
 +
-[source, console]
+//[source, console]
+[console, subs="attributes+"]
 ----
 cp Dockerfile /tmp/Dockerfile.orig
 ----
 
-.. Update the golang build container image to version `{golang-version}`.
+.. Update the repository for the CUDA license container image:
++
+[console, subs="attributes+"]
+----
+sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
+----
+
+.. Update the golang build container image to version `{golang-version}`:
 +
 [console, subs="attributes+"]
 ----
@@ -621,6 +645,7 @@ ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSI
   --build-arg DRIVER_ARCH="x86_64" \
   --build-arg DRIVER_VERSION="${DRIVER_VERSION}" \
   --build-arg CUDA_VERSION="${CUDA_VERSION}" \
+  --build-arg KERNEL_VERSION="${KERNEL_VERSION}" \
   --build-arg PRIVATE_KEY=empty  \
 .
 ----
