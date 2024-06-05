@@ -70,7 +70,7 @@ include::./common_docinfo_vars.adoc[]
 
 :suse-container-docs: https://documentation.suse.com/container/all/single-html/Container-guide/
 
-:rancher-full: Rancher by SUSE
+:rancher-full: Rancher Prime
 :rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
 :rancher-docs: https://ranchermanager.docs.rancher.com/
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
@@ -345,7 +345,12 @@ Verify that your build host can access and download base container images from t
 --
 ////
 
-
+* {rancher-full}
+//
++
+Your {rke2} cluster should be under the management of {rancher-full} to allow for installing and maintaining the {nvidia-org} software.
+//
++
 * {rke2-full} Kubernetes cluster
 //
 +
@@ -434,7 +439,7 @@ sudo zypper install \
 {rke2-docs}[{rke2}] is the security focused Kubernetes distribution developed by SUSE.
 +
 Ensure your worker nodes are part of an {rke2} cluster.
-You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to spin up and configure the cluster.
+You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to create and configure the cluster.
 
 --
 
@@ -806,7 +811,7 @@ sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 
 
 
-== Deploying to a Kubernetes cluster
+== Deploying to an {rke2} Kubernetes cluster
 
 Kubernetes provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
 Configuring and managing these resources involves multiple software components, including drivers, libraries, and container runtimes.
@@ -817,8 +822,10 @@ The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm
 Learn more about {rancher-kubectl-url}[How to Manage Kubernetes with Kubectl].
 
 In addition to Helm and Kubectl, you also need the {kubernetes-docs}concepts/configuration/organize-cluster-access-kubeconfig/[kubeconfig file] for your target Kubernetes cluster.
-If you are using {rancher-full} to manage your cluster, you can use the {rancher-docs}how-to-guides/new-user-guides/manage-clusters/access-clusters/use-kubectl-and-kubeconfig#accessing-clusters-with-kubectl-from-your-workstation[download the kubeconfig file] of your cluster for use on your build host or other Linux system.
+Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including running commands on it without having to  download the kubeconfig file for the cluster or installing extra software on an external workstation.
+//Using {rancher-full} to manage your {rke2} cluster allows you to easily run commands on it without having to  the {rancher-docs}how-to-guides/new-user-guides/manage-clusters/access-clusters/use-kubectl-and-kubeconfig#accessing-clusters-with-kubectl-from-your-workstation[download the kubeconfig file] of your cluster for use on your build host or other Linux system.
 
+////
 [NOTE]
 ====
 If you are using a system other than your build host to deploy your container, be sure you have:
@@ -832,6 +839,7 @@ If you are using a system other than your build host to deploy your container, b
 ====
 The kubeconfig file gives the rights (in many cases administrator level) to make changes to the Kubernetes cluster. Use extra care to keep it secure and remove it from any hosts/nodes after it is no longer needed.
 ====
+////
 
 . Before starting your deployment, make sure that the {nvidia-org} kernel modules are not loaded on any of the Kubernetes worker nodes.
 
