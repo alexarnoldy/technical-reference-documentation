@@ -503,7 +503,7 @@ EOF
 Find the latest "Data Center Driver for Linux x64" version for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 Also, take note of the *CUDA Toolkit* version.
 +
-* `OPERATOR_VERSION`: The associated {nvidia-op-url}platform-support.html[{nvidia-op}] version.
+* `OPERATOR_VERSION`: The {nvidia-op-url}platform-support.html[{nvidia-op}] that is compatible with the driver version.
 +
 * `CUDA_VERSION`: The {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
 //
@@ -583,6 +583,8 @@ KERNEL_VERSION=${KERNEL_VERSION}"
 +
 [source, console, subs="attributes+"]
 ----
+mkdir -p ~/nvidia-gpu-driver-container && \
+cd nvidia-gpu-driver-container && \
 git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 ----
 
@@ -629,11 +631,13 @@ diff /tmp/Dockerfile.orig Dockerfile
 
 . Build the container image.
 +
+////
 [IMPORTANT] 
 ====
 When building the container image, you may be prompted for the registry that contains the `nvidia/cuda` image.
 If so, select the image located in {nvidia-license-image-registry}.
 ====
+////
 
 .. Execute the `podman build` command, passing necessary arguments.
 +
@@ -672,7 +676,7 @@ cf9768704892c4b8b9e37a4ef591472e121b81949519204811dcc37d2be9d16c
 +
 [source, console]
 ----
-for X in $(sudo podman images | awk '/none/ {print$3}'); do sudo podman rmi ${X}; done
+for EACH in $(sudo podman images | awk '/none/ {print$3}'); do sudo podman rmi ${EACH}; done
 ----
 
 . Push the newly built image to the container registry.
@@ -681,52 +685,54 @@ for X in $(sudo podman images | awk '/none/ {print$3}'); do sudo podman rmi ${X}
 ====
 If the target container registry requires authentication, use the {podman-docs}podman-login.1.html[Podman's `login` command] to successfully authenticate before continuing.
 ====
-
-.. {podman-docs}podman-tag.1.html[Add a tag] to the image that will be used when deploying the image to a Kubernetes cluster.
++
+. {podman-docs}podman-tag.1.html[Add a tag] to the image that will be used when deploying the image to a Kubernetes cluster.
 +
 [source, console]
 ----
 sudo podman tag ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
-
-.. {podman-docs}podman-push.1.html[Push] the image with both tags.
++
+. {podman-docs}podman-push.1.html[Push] the image with both tags.
 +
 [source, console]
 ----
 sudo podman push ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} &&
 sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
-
-.. Verify the image is saved in the registry, and remotely available.
++
+. Verify the image is saved in the registry, and remotely available.
 +
 [source, console]
 ----
 sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
-
++
 . (optional) Validate the container image with Podman
 //
 +
-To validate the container outside the context of Kubernetes, use the worker node on which you installed Podman.
-
-.. Open a terminal session to the worker node you will use for testing.
-
+// To validate the container outside the context of Kubernetes, use the worker node on which you installed Podman.
++
+//.. Open a terminal session to the worker node you will use for testing.
++
 .. Create the `/run/nvidia` directory, if it does not yet exist.
 +
 [source, console]
 ----
 sudo mkdir -p /run/nvidia
 ----
-
-.. Copy your `/tmp/build-variables.sh` file to the node.
-
++
+//.. Copy your `/tmp/build-variables.sh` file to the node.
++
+////
 .. Source the `/tmp/build-variables.sh` file to set your environment variables.
 +
 [source, console]
 ----
 source /tmp/build-variables.sh
 ----
-
+////
++
 .. Run the {nvidia-drv} container locally.
 +
 [source, console]
