@@ -70,11 +70,15 @@ include::./common_docinfo_vars.adoc[]
 
 :suse-container-docs: https://documentation.suse.com/container/all/single-html/Container-guide/
 
+:rancher: Rancher
 :rancher-full: Rancher Prime
 :rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
 :rancher-docs: https://ranchermanager.docs.rancher.com/
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
+:rancher-kubectl-shell: Kubectl Shell
+:rancher-kubectl-shell-variables-file: /tmp/nvidia-variables
+:rancher-kubectl-configmap-name: nvidia-variables
 
 :rmt: RMT
 :rmt-docs: {sles-docs}/single-html/SLES-rmt/
@@ -99,7 +103,7 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-license-image-registry: docker.io
 
 
-//:build-variables-file: /tmp/.build-variables.sh
+//:nvidia-variables-file: /tmp/.nvidia-variables.sh
 
 :rke2-cluster-access-url: https://docs.rke2.io/cluster_access/
 :podman-docs: https://docs.podman.io/en/latest/markdown/
@@ -478,11 +482,11 @@ Run the following commands on your build node.
 
 . Log in to your build node.
 
-. Create the `/tmp/build-variables.sh` file:
+. Create the `/tmp/nvidia-variables.sh` file:
 +
 [source, console]
 ----
-cat <<EOF> /tmp/build-variables.sh
+cat <<EOF> /tmp/nvidia-variables.sh
 export REGISTRY=""
 export SLE_VERSION=""
 export SLE_SP=""
@@ -493,7 +497,7 @@ export KERNEL_VERSION=""
 EOF
 ----
 
-. Edit the `/tmp/build-variables.sh` file to supply appropriate values for your project.
+. Edit the `/tmp/nvidia-variables.sh` file to supply appropriate values for your project.
 +
 --
 * `REGISTRY`: URL of the registry where the new container image is to be saved
@@ -538,7 +542,7 @@ All GPU-enabled worker nodes should have the same {sles} version and service pac
 +
 --
 +
-For example, your `/tmp/build-variables.sh` file should look something like:
+For example, your `/tmp/nvidia-variables.sh` file should look something like:
 +
 [listing, bash, subs="attributes+"]
 ----
@@ -552,23 +556,23 @@ export KERNEL_VERSION="{sles-kernel-version}"
 
 ----
 
-. Source your `/tmp/build-variables.sh` file to set the variables in your current session environment.
+. Source your `/tmp/nvidia-variables.sh` file to set the variables in your current session environment.
 +
 [source, console]
 ----
-source /tmp/build-variables.sh
+source /tmp/nvidia-variables.sh
 ----
 
 [IMPORTANT]
 ====
 These variables are lost when you disconnect from your terminal session.
-To recreate them, simply source the build-variables file again.
+To recreate them, simply source the nvidia-variables file again.
 ====
 
 
 == Building the container image
 
-. On your build node, make sure you have sourced your `/tmp/build-variables.sh` file to set your environment variables.
+. On your build node, make sure you have sourced your `/tmp/nvidia-variables.sh` file to set your environment variables.
 //
 +
 You can verify your variables with:
@@ -727,14 +731,14 @@ sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VE
 sudo mkdir -p /run/nvidia
 ----
 +
-//.. Copy your `/tmp/build-variables.sh` file to the node.
+//.. Copy your `/tmp/nvidia-variables.sh` file to the node.
 +
 ////
-.. Source the `/tmp/build-variables.sh` file to set your environment variables.
+.. Source the `/tmp/nvidia-variables.sh` file to set your environment variables.
 +
 [source, console]
 ----
-source /tmp/build-variables.sh
+source /tmp/nvidia-variables.sh
 ----
 ////
 +
@@ -809,7 +813,59 @@ sudo podman stop driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} &&
 sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
 
+== Create the nvidia-variables ConfigMap
+Certain information is needed multiple times throughout the rest of this process.
+This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
 
+. Create the `nvidia-variables` configmap in the `cattle-system` namespace:
+.. In the {rancher} UI, select the Home icon image::rancher-home-icon.png[Rancher Home Icon]from the menu on the left
+.. Select your {rke2} cluster
+.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
+.. Select `Storage`, then `ConfigMaps`
+.. Click the `Create` button on the top right of the window
+.. Select the `cattle-system` namespace
+.. Name the ConfigMap:
++
+[source, console]
+----
+nvidia-variables
+----
++
+.. Copy all of these keys into the first cell in the `Key` column. 
+Each key will automatically get populated into its own cell.
++
+[source, console]
+----
+REGISTRY
+SLE_VERSION
+SLE_SP
+DRIVER_VERSION
+OPERATOR_VERSION
+CUDA_VERSION
+KERNEL_VERSION
+----
++
+.. Populate the `Value` for each column from your `/tmp/nvidia-variables.sh` file.
++
+.. Click the `Create` button at the bottom right of the window
+
+== Create the variables file 
+
+[NOTE]
+====
+This part of the procedure will create a {rancher-kubectl-shell-variables-file} in the current session of the {rancher-kubectl-shell}.
+This is necessary every time the {rancher-kubectl-shell} is opened.
+====
+
+. If the {rancher-kubectl-shell} isn't already open and "Connected", you may open it while viewing your {rke2} cluster by selecting the {rancher-kubectl-shell} icon image::rancher-kubectl-shell.png[Kubectl Shell] at the top of the window.
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+----
+
+. If you want to, you may pull the border between the {rancher-kubectl-shell} image::rancher-pull-button.png[Rancher Pull Button] and the main {rancher} UI down until you need the shell again.
 
 == Deploying to an {rke2} Kubernetes cluster
 
@@ -819,10 +875,11 @@ This can be difficult and prone to error.
 The {nvidia-op} helps overcome these difficulties using the Kubernetes operator framework to automate management of {nvidia-org} software components.
 
 The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] Kubernetes package manager.
-Learn more about {rancher-kubectl-url}[How to Manage Kubernetes with Kubectl].
+//Learn more about {rancher-kubectl-url}[How to Manage Kubernetes with Kubectl].
 
-In addition to Helm and Kubectl, you also need the {kubernetes-docs}concepts/configuration/organize-cluster-access-kubeconfig/[kubeconfig file] for your target Kubernetes cluster.
-Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including running commands on it without having to  download the kubeconfig file for the cluster or installing extra software on an external workstation.
+//In addition to Helm and Kubectl, you also need the {kubernetes-docs}concepts/configuration/organize-cluster-access-kubeconfig/[kubeconfig file] for your target Kubernetes cluster.
+Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or installing extra software on an external workstation.
+In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
 //Using {rancher-full} to manage your {rke2} cluster allows you to easily run commands on it without having to  the {rancher-docs}how-to-guides/new-user-guides/manage-clusters/access-clusters/use-kubectl-and-kubeconfig#accessing-clusters-with-kubectl-from-your-workstation[download the kubeconfig file] of your cluster for use on your build host or other Linux system.
 
 ////
@@ -854,8 +911,8 @@ sudo lsmod | grep nvidia
 ====
 If no {nvidia-org} modules are loaded, the output of the command should be empty.
 ====
-
-.. Unload any modules containing 'nvidia'.
++
+... Unload any modules containing 'nvidia'.
 +
 [source, console]
 ----
@@ -867,12 +924,20 @@ where `<module-name>` is the name of the kernel module displayed by the `lsmod` 
 ====
 If any modules fail to unload, reboot the node.
 ====
-
-
-. Log in to your build host or the system you are using to manage deployment to your cluster.
-
-. Make sure your environment variables are set.
-
++
+. Log in to your {rancher} server.
++
+. Select your cluster, then click the `Explore` button (if shown).
++
+. Click the {rancher-kubectl-shell} icon at the top right of the window.
++
+. When the {rancher-kubectl-shell} is ready, run the following command:
++
+[source, console, subs="attributes+"]
+----
+kubectl get configmap -n cattle-system {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+----
++
 . Add the {nvidia-org} helm software repository.
 +
 [source, console, subs="attributes+"]
@@ -881,6 +946,7 @@ helm repo add {nvidia-helm-url}
 helm repo update
 ----
 
+////
 . Verify that you are targeting the correct cluster.
 +
 [source, console]
@@ -893,11 +959,13 @@ echo ""
 ----
 +
 If this is not the correct cluster, check that you have properly set up your kubeconfig file.
+////
 
 . Deploy the {nvidia-op} with Helm.
 +
 [source, console]
 ----
+source {rancher-kubectl-shell-variables-file} && 
 helm install -n gpu-operator \
   --generate-name \
   --wait \
@@ -1023,7 +1091,7 @@ The output should be similar to the `nvidia-smi` output when validating the {nvi
 
 == Cleaning up
 
-After completing this procedure, remove the `/tmp/build-variables.sh` and the /tmp/Dockerfile.orig files from the build host and any Kubernetes worker nodes. 
+After completing this procedure, remove the `/tmp/nvidia-variables.sh` and the /tmp/Dockerfile.orig files from the build host and any Kubernetes worker nodes. 
 
 Also, when ready, remove the Kubernetes cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
 
