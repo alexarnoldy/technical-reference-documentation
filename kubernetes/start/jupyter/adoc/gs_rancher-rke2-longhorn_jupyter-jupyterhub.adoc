@@ -91,14 +91,14 @@ include::./common_docinfo_vars.adoc[]
 :comp2-provider: SUSE
 :comp2: RKE2
 :comp2-full: Rancher Kubernetes Engine 2
-:comp2-version: v1.27.12+rke2r1
+:comp2-version: v1.27.14+rke2r1
 :comp2-website: https://www.suse.com/products/rancher-kubernetes-engine/
 :comp2-docs: https://docs.rke2.io/
 
 :comp3-provider: SUSE
 :comp3: Longhorn
 :comp3-full: Longhorn
-:comp3-version: 103.3.0+up1.6.1
+:comp3-version: 103.3.1+up1.6.2
 :comp3-website: https://longhorn.io/
 :comp3-docs: https://longhorn.io/docs/latest
 
@@ -124,7 +124,8 @@ include::./common_docinfo_vars.adoc[]
 :rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
 :rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
 :rancher-kubectl-shell: Kubectl Shell
-:rancher-kubectl-shell-variables-file: /tmp/variables
+:rancher-kubectl-shell-variables-file: /tmp/jupyterhub-variables
+:rancher-variables-configmap-name: jupyterhub-variables
 
 :longhorn: Longhorn
 :longhorn-version: 103.3.0+up1.6.1
@@ -173,7 +174,8 @@ include::./common_docinfo_vars.adoc[]
 
 :jupyterhub-provider: Project Jupyter
 :jupyterhub: JupyterHub
-:jupyterhub-version: 4.0.2
+:jupyterhub-version: 4.1.5
+:jupyterhub-chart-version: 3.3.7
 :jupyterhub-website: https://jupyter.org/hub
 :jupyterhub-docs: https://jupyterhub.readthedocs.io/en/latest/
 :jupyterhub-installation-doc: https://z2jh.jupyter.org/en/stable/jupyterhub/installation.html
@@ -598,6 +600,8 @@ In creating the {rke2} cluster, we have used these specific parameters:
 * Kubernetes Version: {rke2-version}
 ====
 +
+(Click `Create` when ready)
++
 . After the {rke2} cluster has been deployed, its status will become `Active`. 
 This can take five to ten minutes, depending on the performance of the underlying infrastructure. 
 
@@ -618,18 +622,18 @@ This is required to activate the "kernel-default" kernel.
 Certain information is needed multiple times throughout this deployment process.
 This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
 
-. Create the `variables` configmap in the `cattle-system` namespace:
+. Create the `variables` configmap in the `default` namespace:
 .. In the {rancher} UI, select the Home icon image::rancher-home-icon.png[Rancher Home Icon]from the menu on the left
 .. Select the {jupyterhub} cluster
 .. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
 .. Select `Storage`, then `ConfigMaps`
 .. Click the `Create` button on the top right of the window
-.. Select the `cattle-system` namespace
+.. Select the `default` namespace
 .. Name the ConfigMap
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
-variables
+{rancher-variables-configmap-name}
 ----
 +
 .. Copy all of these keys into the first cell in the `Key` column. 
@@ -673,7 +677,7 @@ This is necessary every time the {rancher-kubectl-shell} is opened.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-variables-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 
 . If you want to, you may pull the border between the {rancher-kubectl-shell} image::rancher-pull-button.png[Rancher Pull Button] and the main {rancher} UI down until you need the shell again.
@@ -690,9 +694,9 @@ Be sure to return to this document to edit the *Longhorn Default Settings*.
 
 [NOTE]
 ====
-In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for slightly higher performance and lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
+In deploying {longhorn} in the {jupyterhub} {rke2} cluster, we have opted for lower storage consumption by configuring {longhorn} to create only two volume replicas per persistent volume. 
 This will suit our needs but will sacrifice higher data redundancy. 
-The general guidance here is to use two or three volume replicas, but always one less than the number of nodes in the {rke2} cluster.
+The general guidance here is to use two or three volume replicas, but always one less than the number of {longhorn} enabled nodes in the {rke2} cluster.
 ====
 
 . To configure Longhorn, we have used these specific parameters:
@@ -772,7 +776,7 @@ With the following step you will add the dedicated IP address configuration to {
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-variables-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 +
 . Create the {metallb} IPAdressPool and L2Advertisement:
@@ -998,7 +1002,7 @@ After the final message `SUCCESS: helm install...` is displayed, you may close t
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-variables-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 +
 [NOTE]
@@ -1025,8 +1029,8 @@ kubectl create namespace {jupyterhub-namespace}
 +
 [NOTE]
 ====
-When initially creating the cert-manager Issuer, ensure the `server: {lets-encrypt-base-staging-url}` line is uncommented and the `server: {lets-encrypt-base-prod-url}` line is commented out. 
-After verifying that the certificate can be issued correctly, we will reverse this to obtain the valid, production certificate.
+When initially creating the cert-manager Issuer, you will use the *{lets-encrypt-base-staging-url}* server to test the process of issuing a certificate to avoid the Let's Encrypt production rate limits. 
+After verifying that the certificate can be issued correctly, we will update to the *{lets-encrypt-base-prod-url}* server to obtain the valid, production certificate.
 ====
 +
 
@@ -1049,8 +1053,7 @@ metadata:
 spec:
   acme:
     email: ${EMAIL_ADDR}
-    server: {lets-encrypt-full-staging-url} # Use this line to test the process of issuing a certificate to avoid the Let's Encrypt production rate limits
-#    server: {lets-encrypt-full-prod-url} # Use this line after the certificate issues correctly
+    server: {lets-encrypt-full-staging-url} 
     privateKeySecretRef:
       name: letsencrypt-issuer-priv-key # K8s secret that will contain the private key for this, specific issuer
     solvers:
@@ -1157,13 +1160,15 @@ kubectl logs -n cert-manager -l app=cert-manager
 Proceed to the next section only after the certificate shows a `READY` status of `True` 
 ====
 +
-. After the certificate has been successfully issued, edit the `letsencrypt-issuer` to change from the {lets-encrypt} staging server to the production server:
+. After the certificate has been successfully issued, update the `letsencrypt-issuer` resource to change from the {lets-encrypt} staging server to the production server:
 +
 [source, console, subs="attributes+"]
 ----
-kubectl -n {jupyterhub-namespace} edit issuer letsencrypt-issuer
+source /tmp/jupyterhub-variables && \
+kubectl patch issuer letsencrypt-issuer -n jupyterhub --type=json -p='[{"op": "replace", "path": "/spec/acme/server", "value": "https://acme-v02.api.letsencrypt.org/directory"}]'
 ----
 +
+////
 [NOTE]
 ====
 The {lets-encrypt} URLs are as follows:
@@ -1172,6 +1177,7 @@ Staging: {lets-encrypt-full-staging-url}
 
 Production: {lets-encrypt-full-prod-url}
 ====
+////
 +
 . Remove the staging certificate and its associated secret:
 +
@@ -1208,12 +1214,22 @@ spec:
 EOF
 ----
 +
-. Check the status of the certificate and secret:
+. Check the status of the secret:
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get -n jupyterhub certificates,secrets
+kubectl get -n jupyterhub secrets
 ----
+. Check the status of the certificate:
++
+[source, console, subs="attributes+"]
+----
+kubectl get -w -n {jupyterhub-namespace} certificate
+----
++
+.. Use `Ctrl+c` to exit the kubectl -w (watch) command
++
+. Continue on to the next step in this process only after the production certificate has been issued.
 
 == Deploy {jupyterhub} on {rke2-full}
 
@@ -1246,7 +1262,7 @@ Create the config.yaml file that will point to the secret containing TLS certifi
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system variables -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-variables-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 +
 . Create the config.yaml file:
@@ -1298,7 +1314,7 @@ helm upgrade --cleanup-on-fail \
   --install jupyterhub jupyterhub/jupyterhub \
   --namespace jupyterhub \
   --create-namespace \
-  --version=${CHART_VERSION} \
+  --version={jupyterhub-chart-version} \
   --values config.yaml
 ----
 
