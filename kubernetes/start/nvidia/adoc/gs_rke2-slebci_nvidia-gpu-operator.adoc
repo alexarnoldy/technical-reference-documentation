@@ -444,9 +444,9 @@ sudo zypper install \
 +
 Ensure your worker nodes are part of an {rke2} cluster.
 You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to create and configure the cluster.
-
++
 --
-
++
 . Access to SUSE Container Images
 //
 +
@@ -522,6 +522,7 @@ Also, take note of the *CUDA Toolkit* version.
 +
 [source, console, subs="attributes+"]
 ----
+CUDA_VERSION="" # Insert the CUDA version, as show on driver webpage
 sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "12.4" | grep base-ubi8
 ----
 +
@@ -593,7 +594,7 @@ KERNEL_VERSION=${KERNEL_VERSION}"
 [source, console, subs="attributes+"]
 ----
 mkdir -p ~/nvidia-gpu-driver-container && \
-cd nvidia-gpu-driver-container && \
+cd ~/nvidia-gpu-driver-container && \
 git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 ----
 
@@ -607,6 +608,13 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 cp Dockerfile /tmp/Dockerfile.orig
 ----
 
+.. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
++
+[console, subs="attributes+"]
+----
+if grep -q 'grep "Basesystem"' "$file"; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' "$file";   echo "The change has been applied."; fi
+----
++
 .. Update the repository for the CUDA license container image:
 +
 [console, subs="attributes+"]
