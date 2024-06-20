@@ -682,7 +682,8 @@ If so, select the image located in {nvidia-license-image-registry}.
 ----
 source {nvidia-variables-file} &&
 sudo podman build -t \
-${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} \
+${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} \
+#${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} \
   --build-arg SLES_VERSION="${SLE_VERSION}.${SLE_SP}" \
   --build-arg DRIVER_ARCH="x86_64" \
   --build-arg DRIVER_VERSION="${DRIVER_VERSION}" \
@@ -723,6 +724,8 @@ for EACH in $(sudo podman images | awk '/none/ {print$3}'); do sudo podman rmi $
 If the target container registry requires authentication, use the {podman-docs}podman-login.1.html[Podman's `login` command] to successfully authenticate before continuing.
 ====
 +
+////
+// Eliminated the initial build image. Now down to just the image needed for K8s.
 . {podman-docs}podman-tag.1.html[Add a tag] to the image that will be used when deploying the image to a Kubernetes cluster.
 +
 [source, console]
@@ -737,6 +740,14 @@ sudo podman tag ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION
 ----
 source {nvidia-variables-file} &&
 sudo podman push ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} &&
+sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+----
+////
+. {podman-docs}podman-push.1.html[Push] the image:
++
+[source, console]
+----
+source {nvidia-variables-file} &&
 sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
 +
