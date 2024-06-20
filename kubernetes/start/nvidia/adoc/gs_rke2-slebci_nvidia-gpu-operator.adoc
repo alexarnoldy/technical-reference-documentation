@@ -596,7 +596,7 @@ DRIVER_VERSION=${DRIVER_VERSION}
 CUDA_VERSION=${CUDA_VERSION} 
 KERNEL_VERSION=${KERNEL_VERSION}"
 ----
-
++
 . Clone the {nvidia-org} driver GitLab repository and change to the `driver/{nvidia-gitlab-drv-dir}` directory.
 +
 [source, console, subs="attributes+"]
@@ -605,9 +605,9 @@ mkdir -p ~/nvidia-gpu-driver-container && \
 cd ~/nvidia-gpu-driver-container && \
 git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 ----
-
++
 . Locate the file, `Dockerfile`, and update it to reflect your build requirements.
-
++
 .. Make a backup of `Dockerfile` before modifying the original.
 +
 //[source, console]
@@ -629,14 +629,14 @@ if grep -q 'grep "Basesystem"' "$file"; then   echo "The change has already been
 ----
 sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
 ----
-
++
 .. Update the golang build container image to version `{golang-version}`:
 +
 [console, subs="attributes+"]
 ----
 sed -i "/^FROM/ s/golang\:1\.../golang\:{golang-version}/" Dockerfile
 ----
-
++
 .. Update the base container image to the {sles} {sle-bci-version} BCI:
 //
 +
@@ -644,16 +644,15 @@ sed -i "/^FROM/ s/golang\:1\.../golang\:{golang-version}/" Dockerfile
 ----
 sed -i '/^FROM/ s/suse\/sle{sles-version}/bci\/bci-base/' Dockerfile
 ----
-
++
 .. Verify that the changes have been made correctly to `Dockerfile`.
 //
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 diff /tmp/Dockerfile.orig Dockerfile
 ----
-
-
++
 . Build the container image.
 +
 ////
@@ -663,10 +662,10 @@ When building the container image, you may be prompted for the registry that con
 If so, select the image located in {nvidia-license-image-registry}.
 ====
 ////
-
++
 .. Execute the `podman build` command, passing necessary arguments.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 sudo podman build -t \
 ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} \
@@ -677,12 +676,12 @@ ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSI
   --build-arg KERNEL_VERSION="${KERNEL_VERSION}" \
   --build-arg PRIVATE_KEY=empty  .
 ----
-
++
 .. Watch the build output for errors, warnings, and failures.
 //
 +
 You can safely ignore errors and warnings that do not stop the build process.
-
++
 .. Verify that the build process finishes successfully.
 //
 +
