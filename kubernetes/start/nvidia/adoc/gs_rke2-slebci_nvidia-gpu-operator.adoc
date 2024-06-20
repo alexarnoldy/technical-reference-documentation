@@ -683,7 +683,6 @@ If so, select the image located in {nvidia-license-image-registry}.
 source {nvidia-variables-file} &&
 sudo podman build -t \
 ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} \
-#${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} \
   --build-arg SLES_VERSION="${SLE_VERSION}.${SLE_SP}" \
   --build-arg DRIVER_ARCH="x86_64" \
   --build-arg DRIVER_VERSION="${DRIVER_VERSION}" \
