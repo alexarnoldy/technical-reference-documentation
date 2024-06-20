@@ -620,7 +620,7 @@ cp Dockerfile /tmp/Dockerfile.orig
 +
 [console, subs="attributes+"]
 ----
-if grep -q 'grep "Basesystem"' "$file"; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' "$file";   echo "The change has been applied."; fi
+if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' nvidia-driver;   echo "The change has been applied."; fi
 ----
 +
 .. Update the repository for the CUDA license container image:
