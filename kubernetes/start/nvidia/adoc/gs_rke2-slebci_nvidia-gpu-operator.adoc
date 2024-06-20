@@ -103,7 +103,7 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-license-image-registry: docker.io
 
 
-//:nvidia-variables-file: /tmp/.nvidia-variables.sh
+:nvidia-variables-file: /tmp/nvidia-variables.sh
 
 :rke2-cluster-access-url: https://docs.rke2.io/cluster_access/
 :podman-docs: https://docs.podman.io/en/latest/markdown/
@@ -482,11 +482,11 @@ Run the following commands on your build node.
 
 . Log in to your build node.
 
-. Create the `/tmp/nvidia-variables.sh` file:
+. Create the `{nvidia-variables-file}` file:
 +
 [source, console]
 ----
-cat <<EOF> /tmp/nvidia-variables.sh
+cat <<EOF> {nvidia-variables-file}
 export REGISTRY=""
 export SLE_VERSION=""
 export SLE_SP=""
@@ -497,7 +497,7 @@ export KERNEL_VERSION=""
 EOF
 ----
 
-. Edit the `/tmp/nvidia-variables.sh` file to supply appropriate values for your project.
+. Edit the `{nvidia-variables-file}` file to supply appropriate values for your project.
 +
 --
 * `REGISTRY`: URL of the registry where the new container image is to be saved
@@ -551,7 +551,7 @@ All GPU-enabled worker nodes should have the same {sles} version and service pac
 +
 --
 +
-For example, your `/tmp/nvidia-variables.sh` file should look something like:
+For example, your `{nvidia-variables-file}` file should look something like:
 +
 [listing, bash, subs="attributes+"]
 ----
@@ -565,11 +565,11 @@ export KERNEL_VERSION="{sles-kernel-version}"
 
 ----
 
-. Source your `/tmp/nvidia-variables.sh` file to set the variables in your current session environment.
+. Source your `{nvidia-variables-file}` file to set the variables in your current session environment.
 +
 [source, console]
 ----
-source /tmp/nvidia-variables.sh
+source {nvidia-variables-file}
 ----
 
 [IMPORTANT]
@@ -581,10 +581,11 @@ To recreate them, simply source the nvidia-variables file again.
 
 == Building the container image
 
-. On your build node, make sure you have sourced your `/tmp/nvidia-variables.sh` file to set your environment variables.
+. On your build node, make sure you have sourced your `{nvidia-variables-file}` file to set your environment variables.
 //
 +
 You can verify your variables with:
+//
 +
 [source, console]
 ----
@@ -596,8 +597,10 @@ DRIVER_VERSION=${DRIVER_VERSION}
 CUDA_VERSION=${CUDA_VERSION} 
 KERNEL_VERSION=${KERNEL_VERSION}"
 ----
+//
 +
 . Clone the {nvidia-org} driver GitLab repository and change to the `driver/{nvidia-gitlab-drv-dir}` directory.
+//
 +
 [source, console, subs="attributes+"]
 ----
@@ -605,8 +608,10 @@ mkdir -p ~/nvidia-gpu-driver-container && \
 cd ~/nvidia-gpu-driver-container && \
 git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 ----
+//
 +
 . Locate the file, `Dockerfile`, and update it to reflect your build requirements.
+//
 +
 .. Make a backup of `Dockerfile` before modifying the original.
 +
@@ -615,27 +620,34 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 ----
 cp Dockerfile /tmp/Dockerfile.orig
 ----
+//
 +
 .. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
+//
 +
 [console, subs="attributes+"]
 ----
 if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' nvidia-driver;   echo "The change has been applied."; fi
 ----
+//
 +
 .. Update the repository for the CUDA license container image:
+//
 +
 [console, subs="attributes+"]
 ----
 sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
 ----
+//
 +
 .. Update the golang build container image to version `{golang-version}`:
+//
 +
 [console, subs="attributes+"]
 ----
 sed -i "/^FROM/ s/golang\:1\.../golang\:{golang-version}/" Dockerfile
 ----
+//
 +
 .. Update the base container image to the {sles} {sle-bci-version} BCI:
 //
@@ -859,7 +871,7 @@ CUDA_VERSION
 KERNEL_VERSION
 ----
 +
-.. Populate the `Value` for each column from your `/tmp/nvidia-variables.sh` file.
+.. Populate the `Value` for each column from your `{nvidia-variables-file}` file.
 +
 .. Click the `Create` button at the bottom right of the window
 
@@ -1105,7 +1117,7 @@ The output should be similar to the `nvidia-smi` output when validating the {nvi
 
 == Cleaning up
 
-After completing this procedure, remove the `/tmp/nvidia-variables.sh` and the /tmp/Dockerfile.orig files from the build host and any Kubernetes worker nodes. 
+After completing this procedure, remove the `{nvidia-variables-file}` and the /tmp/Dockerfile.orig files from the build host and any Kubernetes worker nodes. 
 
 Also, when ready, remove the Kubernetes cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
 
