@@ -47,7 +47,7 @@ include::./common_docinfo_vars.adoc[]
 :sles-full: SUSE Linux Enterprise Server
 :sles-version: 15
 :sles-sp: 5
-:sles-kernel-version: 5.14.21-150500.55.65.1
+:sles-kernel-version: 5.14.21-150500.55.65-default
 :sles-sp-full: SP{sles-sp}
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
@@ -522,18 +522,26 @@ Also, take note of the *CUDA Toolkit* version.
 +
 [source, console, subs="attributes+"]
 ----
-CUDA_VERSION="" # Insert the CUDA version, as show on driver webpage
+CUDA_VERSION="" # Insert the CUDA version, as show on driver web page
 sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "12.4" | grep base-ubi8
 ----
 +
 *** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
 //The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 //+
+////
 * `KERNEL_VERSION`: Use the following command to find the Linux kernel `Version` installed `i+` (likely at the top of the list) on all of the GPU-enabled worker nodes:
 +
 [source, console, subs="attributes+"]
 ----
 sudo zypper search --details --installed-only kernel-default
+----
+////
+* `KERNEL_VERSION`: Use the following command to find the Linux kernel version:
++
+[source, console, subs="attributes+"]
+----
+uname -r
 ----
 +
 [NOTE]
@@ -603,11 +611,11 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 .. Make a backup of `Dockerfile` before modifying the original.
 +
 //[source, console]
-[console, subs="attributes+"]
+[source, console, subs="attributes+"]
 ----
 cp Dockerfile /tmp/Dockerfile.orig
 ----
-
++
 .. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
 +
 [console, subs="attributes+"]
