@@ -567,7 +567,7 @@ export KERNEL_VERSION="{sles-kernel-version}"
 
 . Source your `{nvidia-variables-file}` file to set the variables in your current session environment.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file}
 ----
@@ -587,7 +587,7 @@ To recreate them, simply source the nvidia-variables file again.
 You can verify your variables with:
 //
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 echo "
@@ -744,7 +744,7 @@ sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_S
 ////
 . {podman-docs}podman-push.1.html[Push] the image:
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
@@ -752,7 +752,7 @@ sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_S
 +
 . Verify the image is saved in the registry, and remotely available.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
@@ -785,7 +785,7 @@ source /tmp/nvidia-variables.sh
 +
 .. Run the {nvidia-drv} container locally.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman run -d \
@@ -812,7 +812,7 @@ The container's `STATUS` should show "Up" and the amount of time it has been up 
 
 .. Monitor the deployment of the {nvidia-drv} by reviewing the standard output of the running container.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman logs -f driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
@@ -842,7 +842,7 @@ You should see the `nvidia`, `nvidia_modeset`, and `nvidia_uvm` kernel modules h
 
 .. Verify the `nvidia-smi` utility can communicate with the GPU.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman exec -it \
@@ -851,7 +851,7 @@ sudo podman exec -it \
 
 .. When ready to move forward, stop and remove the container.
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
 sudo podman stop driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} &&
