@@ -859,16 +859,17 @@ sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
 ----
 
 == Create the nvidia-variables ConfigMap
+The remainder of this process will be completed through the {rancher} UI. Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation. Authentication is required, and there is no Kubeconfig file needed that can fall into the wrong hands. In addition, command line sessions are non-persistent.
 Certain information is needed multiple times throughout the rest of this process.
-This information can be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
+This information will be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
 
-. Create the `nvidia-variables` configmap in the `cattle-system` namespace:
+. Create the `nvidia-variables` configmap in the `default` namespace:
 .. In the {rancher} UI, select the Home icon image::rancher-home-icon.png[Rancher Home Icon]from the menu on the left
 .. Select your {rke2} cluster
 .. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
 .. Select `Storage`, then `ConfigMaps`
 .. Click the `Create` button on the top right of the window
-.. Select the `cattle-system` namespace
+.. Select the `default` namespace
 .. Name the ConfigMap:
 +
 [source, console]
@@ -907,7 +908,7 @@ This is necessary every time the {rancher-kubectl-shell} is opened.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 
 . If you want to, you may pull the border between the {rancher-kubectl-shell} image::rancher-pull-button.png[Rancher Pull Button] and the main {rancher} UI down until you need the shell again.
@@ -980,7 +981,7 @@ If any modules fail to unload, reboot the node.
 +
 [source, console, subs="attributes+"]
 ----
-kubectl get configmap -n cattle-system {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
+kubectl get configmap -n default {rancher-kubectl-configmap-name} -o json | jq -r '.data | to_entries[] | "\(.key)=\(.value)"' | sed 's/^/export /' > {rancher-kubectl-shell-variables-file} && cat {rancher-kubectl-shell-variables-file}
 ----
 +
 . Add the {nvidia-org} helm software repository.
