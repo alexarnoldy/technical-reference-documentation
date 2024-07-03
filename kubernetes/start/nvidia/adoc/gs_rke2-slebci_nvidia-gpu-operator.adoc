@@ -626,7 +626,7 @@ cp Dockerfile /tmp/Dockerfile.orig
 .. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
 //
 +
-[console, subs="attributes+"]
+[source, console, subs="attributes+"]
 ----
 if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' nvidia-driver;   echo "The change has been applied."; fi
 ----
@@ -635,7 +635,7 @@ if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has alread
 .. Update the repository for the CUDA license container image:
 //
 +
-[console, subs="attributes+"]
+[source, console, subs="attributes+"]
 ----
 sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
 ----
@@ -644,7 +644,7 @@ sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
 .. Update the golang build container image to version `{golang-version}`:
 //
 +
-[console, subs="attributes+"]
+[source, console, subs="attributes+"]
 ----
 sed -i "/^FROM/ s/golang\:1\.../golang\:{golang-version}/" Dockerfile
 ----
