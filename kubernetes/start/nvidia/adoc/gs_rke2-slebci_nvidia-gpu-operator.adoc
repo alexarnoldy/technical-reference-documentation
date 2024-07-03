@@ -866,7 +866,7 @@ This information will be stored in environment variables and recalled as needed,
 . Create the `nvidia-variables` configmap in the `default` namespace:
 .. In the {rancher} UI, select the Home icon image::rancher-home-icon.png[Rancher Home Icon]from the menu on the left
 .. Select your {rke2} cluster
-.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
+//.. At the top center of the screen, change `Only User Namespaces` to `All Namespaces` image::rancher-all-namespaces.png[Rancher All Namespaces]
 .. Select `Storage`, then `ConfigMaps`
 .. Click the `Create` button on the top right of the window
 .. Select the `default` namespace
@@ -877,7 +877,7 @@ This information will be stored in environment variables and recalled as needed,
 nvidia-variables
 ----
 +
-.. Copy all of these keys into the first cell in the `Key` column. 
+.. Copy all of these keys and paste them into the first cell in the `Key` column. 
 Each key will automatically get populated into its own cell.
 +
 [source, console]
@@ -924,7 +924,7 @@ The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm
 //Learn more about {rancher-kubectl-url}[How to Manage Kubernetes with Kubectl].
 
 //In addition to Helm and Kubectl, you also need the {kubernetes-docs}concepts/configuration/organize-cluster-access-kubeconfig/[kubeconfig file] for your target Kubernetes cluster.
-Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or installing extra software on an external workstation.
+Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
 In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
 //Using {rancher-full} to manage your {rke2} cluster allows you to easily run commands on it without having to  the {rancher-docs}how-to-guides/new-user-guides/manage-clusters/access-clusters/use-kubectl-and-kubeconfig#accessing-clusters-with-kubectl-from-your-workstation[download the kubeconfig file] of your cluster for use on your build host or other Linux system.
 
@@ -1030,7 +1030,16 @@ helm install -n gpu-operator \
   --set toolkit.env[3].name=CONTAINERD_SET_AS_DEFAULT \
   --set-string toolkit.env[3].value=true
 ----
-
++
+. The {nvidia-op} Helm chart has been successfully deployed when it shows the output:
++
+[source, console]
+----
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+----
++
 . Verify the {nvidia-op}, {nvidia-drv}, and associated elements have been deployed correctly.
 +
 [source, console]
