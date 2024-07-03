@@ -484,7 +484,7 @@ Run the following commands on your build node.
 
 . Create the `{nvidia-variables-file}` file:
 +
-[source, console]
+[source, console, subs="attributes+"]
 ----
 cat <<EOF> {nvidia-variables-file}
 export REGISTRY=""
