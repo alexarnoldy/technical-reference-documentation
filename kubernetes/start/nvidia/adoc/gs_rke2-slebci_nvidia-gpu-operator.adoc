@@ -487,44 +487,44 @@ Run the following commands on your build node.
 [source, console, subs="attributes+"]
 ----
 cat <<EOF> {nvidia-variables-file}
+export CUDA_VERSION=""
+export DRIVER_VERSION=""
+export KERNEL_VERSION=""
+export OPERATOR_VERSION=""
 export REGISTRY=""
 export SLE_VERSION=""
-export SLE_SP=""
-export DRIVER_VERSION=""
-export OPERATOR_VERSION=""
-export CUDA_VERSION=""
-export KERNEL_VERSION=""
+export SLE_VERSION_SP=""
 EOF
 ----
 
 . Edit the `{nvidia-variables-file}` file to supply appropriate values for your project.
 +
 --
-* `REGISTRY`: URL of the registry where the new container image is to be saved
-
-* `SLE_VERSION`: {sle-bci-full} version
-
-* `SLE_SP`: {sle-bci-full} service pack number
-
+* Determine which {nvidia} GPU is installed on your nodes:
+//
++
+[source, console, subs="attributes+"]
+----
+lspci -v | grep -i nvidia
+----
+//
++
+[NOTE]
+====
+All GPU-enabled worker nodes in the cluster should have the same {nvidia} GPU installed to ensure compatibility with the containerized GPU driver.
+====
+//
++
 * `DRIVER_VERSION`: {nvidia-drv} version
 //
 +
 Find the latest "Data Center Driver for Linux x64" version for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 Also, take note of the *CUDA Toolkit* version.
 +
-* `OPERATOR_VERSION`: The {nvidia-op-url}platform-support.html[{nvidia-op}] that is compatible with the driver version.
-+
 * `CUDA_VERSION`: The {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
 //
 +
 ** Use the following command to find the patch versions available for the required CUDA software:
-//
-+
-[source, console, subs="attributes+"]
-----
-CUDA_VERSION="" # Insert the CUDA version, as show on driver web page
-sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "12.4" | grep base-ubi8
-----
 +
 *** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
 //The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
@@ -543,25 +543,36 @@ sudo zypper search --details --installed-only kernel-default
 ----
 uname -r
 ----
+//
 +
 [NOTE]
 ====
 All GPU-enabled worker nodes should have the same {sles} version and service pack version installed, as well as the same kernel version.
 ====
+//
 +
+* `OPERATOR_VERSION`: The {nvidia-op-url}platform-support.html[{nvidia-op}] that is compatible with the driver version.
++
+* `REGISTRY`: URL of the registry where the new container image is to be saved
+
+* `SLE_VERSION`: {sle-bci-full} version
+
+* `SLE_VERSION_SP`: {sle-bci-full} service pack number
+
+
 --
 +
 For example, your `{nvidia-variables-file}` file should look something like:
 +
 [listing, bash, subs="attributes+"]
 ----
+export CUDA_VERSION="{nvidia-cuda-version}"
+export DRIVER_VERSION="{nvidia-drv-version}"
+export KERNEL_VERSION="{sles-kernel-version}"
+export OPERATOR_VERSION="{nvidia-op-version}"
 export REGISTRY="registry.example.com"
 export SLE_VERSION="{sles-version}"
-export SLE_SP="{sles-sp}"
-export DRIVER_VERSION="{nvidia-drv-version}"
-export OPERATOR_VERSION="{nvidia-op-version}"
-export CUDA_VERSION="{nvidia-cuda-version}"
-export KERNEL_VERSION="{sles-kernel-version}"
+export SLE_VERSION_SP="{sles-sp}"
 
 ----
 
@@ -591,12 +602,13 @@ You can verify your variables with:
 ----
 source {nvidia-variables-file} &&
 echo "
+CUDA_VERSION=${CUDA_VERSION} 
+DRIVER_VERSION=${DRIVER_VERSION}
+KERNEL_VERSION=${KERNEL_VERSION}"
+OPERATOR_VERSION="{OPERATOR_VERSION}"
 REGISTRY=${REGISTRY}
 SLE_VERSION=${SLE_VERSION}
-SLE_SP=${SLE_SP}
-DRIVER_VERSION=${DRIVER_VERSION}
-CUDA_VERSION=${CUDA_VERSION} 
-KERNEL_VERSION=${KERNEL_VERSION}"
+SLE_VERSION_SP=${SLE_VERSION_SP}
 ----
 //
 +
@@ -620,12 +632,14 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 [source, console, subs="attributes+"]
 ----
 cp Dockerfile /tmp/Dockerfile.orig
+cp nvidia-driver /tmp/nvidia-driver.orig
 ----
 //
 +
 .. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
 //
 +
+[console, subs="attributes+"]
 [source, console, subs="attributes+"]
 ----
 if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' nvidia-driver;   echo "The change has been applied."; fi
@@ -637,7 +651,7 @@ if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has alread
 +
 [source, console, subs="attributes+"]
 ----
-sed -i "/^FROM/ s/nvidia/docker.io\/nvidia/" Dockerfile
+sed -i "/^FROM/ s/FROM nvidia/FROM docker.io\/nvidia/" Dockerfile
 ----
 //
 +
@@ -658,12 +672,13 @@ sed -i "/^FROM/ s/golang\:1\.../golang\:{golang-version}/" Dockerfile
 sed -i '/^FROM/ s/suse\/sle{sles-version}/bci\/bci-base/' Dockerfile
 ----
 +
-.. Verify that the changes have been made correctly to `Dockerfile`.
+.. Verify that the changes have been made correctly to the `Dockerfile` and `nvidia-driver` files.
 //
 +
 [source, console, subs="attributes+"]
 ----
 diff /tmp/Dockerfile.orig Dockerfile
+diff /tmp/nvidia-driver.orig nvidia-driver 
 ----
 +
 . Build the container image.
@@ -682,8 +697,8 @@ If so, select the image located in {nvidia-license-image-registry}.
 ----
 source {nvidia-variables-file} &&
 sudo podman build -t \
-${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} \
-  --build-arg SLES_VERSION="${SLE_VERSION}.${SLE_SP}" \
+${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} \
+  --build-arg SLES_VERSION="${SLE_VERSION}.${SLE_VERSION_SP}" \
   --build-arg DRIVER_ARCH="x86_64" \
   --build-arg DRIVER_VERSION="${DRIVER_VERSION}" \
   --build-arg CUDA_VERSION="${CUDA_VERSION}" \
@@ -730,7 +745,7 @@ If the target container registry requires authentication, use the {podman-docs}p
 [source, console]
 ----
 source {nvidia-variables-file} &&
-sudo podman tag ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman tag ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_VERSION_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 +
 . {podman-docs}podman-push.1.html[Push] the image with both tags.
@@ -738,8 +753,8 @@ sudo podman tag ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION
 [source, console]
 ----
 source {nvidia-variables-file} &&
-sudo podman push ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} &&
-sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman push ${REGISTRY}/nvidia-sle${SLE_VERSION}sp${SLE_VERSION_SP}-${DRIVER_VERSION}:${DRIVER_VERSION} &&
+sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 ////
 . {podman-docs}podman-push.1.html[Push] the image:
@@ -747,7 +762,7 @@ sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_S
 [source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
-sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 +
 . Verify the image is saved in the registry, and remotely available.
@@ -755,7 +770,7 @@ sudo podman push ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_S
 [source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
-sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 +
 . (optional) Validate the container image with Podman
@@ -789,13 +804,13 @@ source /tmp/nvidia-variables.sh
 ----
 source {nvidia-variables-file} &&
 sudo podman run -d \
-  --name driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} \
+  --name driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} \
   --privileged \
   --pid=host \
   -v /run/nvidia:/run/nvidia:shared \
   -v /var/log:/var/log \
   --restart=unless-stopped \
-  ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+  ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 
 .. Confirm that the container is running.
@@ -815,7 +830,7 @@ The container's `STATUS` should show "Up" and the amount of time it has been up 
 [source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
-sudo podman logs -f driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman logs -f driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 
 .. Verify that the deployment process completes successfully.
@@ -846,7 +861,7 @@ You should see the `nvidia`, `nvidia_modeset`, and `nvidia_uvm` kernel modules h
 ----
 source {nvidia-variables-file} &&
 sudo podman exec -it \
-     driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} nvidia-smi
+     driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} nvidia-smi
 ----
 
 .. When ready to move forward, stop and remove the container.
@@ -854,8 +869,8 @@ sudo podman exec -it \
 [source, console, subs="attributes+"]
 ----
 source {nvidia-variables-file} &&
-sudo podman stop driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP} &&
-sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_SP}
+sudo podman stop driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} &&
+sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 
 == Create the nvidia-variables ConfigMap
@@ -882,13 +897,13 @@ Each key will automatically get populated into its own cell.
 +
 [source, console]
 ----
+CUDA_VERSION
+DRIVER_VERSION
+KERNEL_VERSION
+OPERATOR_VERSION
 REGISTRY
 SLE_VERSION
-SLE_SP
-DRIVER_VERSION
-OPERATOR_VERSION
-CUDA_VERSION
-KERNEL_VERSION
+SLE_VERSION_SP
 ----
 +
 .. Populate the `Value` for each column from your `{nvidia-variables-file}` file.
