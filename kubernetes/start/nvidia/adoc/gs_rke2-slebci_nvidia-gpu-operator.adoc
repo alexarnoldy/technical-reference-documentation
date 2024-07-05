@@ -58,6 +58,7 @@ include::./common_docinfo_vars.adoc[]
 :sle-bci-version: {sles-version} {sles-sp-full}
 :sle-bci-registry: https://registry.suse.com/
 :sle-bci-url: {sle-bci-registry}bci/bci-base-{sles-version}sp{sles-sp}/index.html
+:sle_re_register_doc: https://www.suse.com/support/kb/doc/?id=000019054
 
 //:golang-version: 1.18
 :golang-version: 1.22
@@ -1161,9 +1162,33 @@ The output should be similar to the `nvidia-smi` output when validating the {nvi
 
 == Cleaning up
 
-After completing this procedure, remove the `{nvidia-variables-file}` and the /tmp/Dockerfile.orig files from the build host and any Kubernetes worker nodes. 
+After completing this procedure, remove the `{nvidia-variables-file}` and the /tmp/Dockerfile.orig files from the build node, as well as the {rancher-kubectl-configmap-name} ConfigMap.
 
 Also, when ready, remove the Kubernetes cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
+
+== Troubleshooting
+
+* Node not registered correctly
+** Error during `podman run`: 
+//
++
+----
+Warning: Skipping service 'container-suseconnect-zypp' because of the above error.
+Problem retrieving the repository index file for service 'container-suseconnect-zypp'
+----
+//
++
+** Validation: The following command shows that only the `SLE_BCI` repository is registered inside the build container.
++
+[source, console, subs="attributes+"]
+----
+source {nvidia-variables-file} &&
+sudo podman exec -it driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} zypper lr
+----
+//
++
+
+** Solution: Cleanly de-register and re-register the node according to {sle_re_register_doc}[this document].
 
 == Summary
 
