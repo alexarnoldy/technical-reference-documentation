@@ -48,6 +48,7 @@ include::./common_docinfo_vars.adoc[]
 :sles-version: 15
 :sles-sp: 5
 :sles-kernel-version: 5.14.21-150500.55.65-default
+:sles-kernel-version-base: 5.14.21
 :sles-sp-full: SP{sles-sp}
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
@@ -888,6 +889,7 @@ sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ** The following error is observed during `podman run` of the driver container: 
 //
 +
+[listing]
 ----
 Warning: Skipping service 'container-suseconnect-zypp' because of the above error.
 Problem retrieving the repository index file for service 'container-suseconnect-zypp'
@@ -904,9 +906,28 @@ sudo podman exec -it driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_S
 //
 +
 ** Solution: Cleanly de-register and re-register the node according to {sle_re_register_doc}[this document].
+//
++
+* The `Dockerfile` file and/or `nvidia-driver` script were not updated correctly.
+//
++
+** The following error is observed while running the driver container image through podman:
+//
++
+[listing, subs="attributes+"]
+----
+No provider of '{sles-kernel-version-base}' found.
+FATAL: failed to install kernel packages. 
+Ensure SLES subscription is available.
+----
+//
++
+** Solution: The steps to update the `Dockerfile` and `nvidia-driver` are idempotent. 
+Repeat those steps to ensure the files are updated correctly, then re-run the driver container image.
 
 == Create the nvidia-variables ConfigMap
-The remainder of this process will be completed through the {rancher} UI. Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation. Authentication is required, and there is no Kubeconfig file needed that can fall into the wrong hands. In addition, command line sessions are non-persistent.
+The remainder of this process will be completed through the {rancher} UI. 
+Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation. 
 Certain information is needed multiple times throughout the rest of this process.
 This information will be stored in environment variables and recalled as needed, helping you to streamline commands, avoid errors, and maintain consistency.
 
@@ -1080,7 +1101,7 @@ helm install -n gpu-operator \
 +
 . The {nvidia-op} Helm chart has been successfully deployed when it shows the output:
 +
-[source, console]
+[listing]
 ----
 STATUS: deployed
 REVISION: 1
