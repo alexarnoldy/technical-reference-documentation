@@ -356,6 +356,14 @@ Verify that your build host can access and download base container images from t
 Your {rke2} cluster should be under the management of {rancher-full} to allow for installing and maintaining the {nvidia-org} software.
 //
 +
+** {rancher} provides a shell interface through the management web interface that includes tools like kubectl and Helm. 
+This comes in the form of a non-persistent container running on the {rancher} {k8s} cluster. 
+This approach provides numerous security advantages. 
+Users must first authenticate through {rancher-full} before they can view or manage downstream clusters. 
+This is more secure than providing users with kubeconfig files that don't require authentication and could get checked into a version control system or otherwise end up in the wrong hands.
+In addition, any sensitive data saved in the shell session will be deleted when the container exits.
+//
++
 * {rke2-full} Kubernetes cluster
 //
 +
@@ -874,6 +882,29 @@ sudo podman stop driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} &
 sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 
+=== Troubleshooting
+
+* The build node is not registered correctly with {scc-full} or an RMT server.
+** The following error is observed during `podman run` of the driver container: 
+//
++
+----
+Warning: Skipping service 'container-suseconnect-zypp' because of the above error.
+Problem retrieving the repository index file for service 'container-suseconnect-zypp'
+----
+//
++
+** Validation: The following command shows that only the `SLE_BCI` repository is registered inside the build container.
++
+[source, console, subs="attributes+"]
+----
+source {nvidia-variables-file} &&
+sudo podman exec -it driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} zypper lr
+----
+//
++
+** Solution: Cleanly de-register and re-register the node according to {sle_re_register_doc}[this document].
+
 == Create the nvidia-variables ConfigMap
 The remainder of this process will be completed through the {rancher} UI. Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation. Authentication is required, and there is no Kubeconfig file needed that can fall into the wrong hands. In addition, command line sessions are non-persistent.
 Certain information is needed multiple times throughout the rest of this process.
@@ -1165,30 +1196,6 @@ The output should be similar to the `nvidia-smi` output when validating the {nvi
 After completing this procedure, remove the `{nvidia-variables-file}` and the /tmp/Dockerfile.orig files from the build node, as well as the {rancher-kubectl-configmap-name} ConfigMap.
 
 Also, when ready, remove the Kubernetes cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
-
-== Troubleshooting
-
-* Node not registered correctly
-** Error during `podman run`: 
-//
-+
-----
-Warning: Skipping service 'container-suseconnect-zypp' because of the above error.
-Problem retrieving the repository index file for service 'container-suseconnect-zypp'
-----
-//
-+
-** Validation: The following command shows that only the `SLE_BCI` repository is registered inside the build container.
-+
-[source, console, subs="attributes+"]
-----
-source {nvidia-variables-file} &&
-sudo podman exec -it driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP} zypper lr
-----
-//
-+
-
-** Solution: Cleanly de-register and re-register the node according to {sle_re_register_doc}[this document].
 
 == Summary
 
