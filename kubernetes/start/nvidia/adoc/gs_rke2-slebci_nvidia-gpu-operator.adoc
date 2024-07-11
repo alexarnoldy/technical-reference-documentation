@@ -84,6 +84,7 @@ include::./common_docinfo_vars.adoc[]
 
 :rmt: RMT
 :rmt-docs: {sles-docs}/single-html/SLES-rmt/
+:suma: SUSE Manager
 
 :nvidia-org: NVIDIA
 :nvidia-url: https://nvidia.com
@@ -108,10 +109,14 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-variables-file: /tmp/nvidia-variables
 
 :rke2-cluster-access-url: https://docs.rke2.io/cluster_access/
+:podman-product: Podman
+:podman: podman
 :podman-docs: https://docs.podman.io/en/latest/markdown/
 :kubectl-docs: https://kubernetes.io/docs/
 :helm-docs: https://helm.sh/docs/
 :kubernetes-docs: https://kubernetes.io/docs/
+:docker-product: Docker
+:k8s: Kubernetes
 
 
 :title: {nvidia-drv} and {nvidia-op} with SUSE
@@ -168,7 +173,7 @@ include::./common_docinfo_vars.adoc[]
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 Graphics Processing Units (GPUs) provide unique capabilities for accelerating a broad spectrum of workloads, such as artificial intelligence and machine learning, scientific and engineering simulations, and many more.
-Developing and deploying these workloads in containers on Kubernetes clusters offers potential for improved portability, scale, and efficiency.
+Developing and deploying these workloads in containers on {k8s} clusters offers potential for improved portability, scale, and efficiency.
 However, GPU resources are not automatically visible or accessible to workloads running in containers.
 
 In this guide, you learn how to:
@@ -214,9 +219,9 @@ This guide assumes that you are using Data Center class {nvidia-org} GPUs. Integ
 //   - required skills
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-This guide is intended for high technology professionals (including Kubernetes administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
+This guide is intended for high technology professionals (including {k8s} administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
 
-To be successful, you need a foundational understanding of Podman or Docker, Kubernetes, and {nvidia-org} GPU technologies.
+To be successful, you need a foundational understanding of {podman-product} or {docker-product}, {k8s}, and {nvidia-org} GPU technologies.
 
 
 === Acknowledgements
@@ -365,20 +370,20 @@ This is more secure than providing users with kubeconfig files that don't requir
 In addition, any sensitive data saved in the shell session will be deleted when the container exits.
 //
 +
-* {rke2-full} Kubernetes cluster
+* {rke2-full} {k8s} cluster
 //
 +
-Your {rke2} Kubernetes cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
+Your {rke2} {k8s} cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
 +
 --
 +
 . Select one worker node as the build node.
 This node will have additional software installed for building the {nvidia} driver container image.
 +
-. Podman 
+. {podman-product}
 //
 +
-Install Podman on the build node:
+Install {podman-product} on the build node:
 +
 [source, console]
 ----
@@ -450,7 +455,7 @@ sudo zypper install \
 . {rke2-full} ({rke2})
 //
 +
-{rke2-docs}[{rke2}] is the security focused Kubernetes distribution developed by SUSE.
+{rke2-docs}[{rke2}] is the security focused {k8s} distribution developed by SUSE.
 +
 Ensure your worker nodes are part of an {rke2} cluster.
 You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to create and configure the cluster.
@@ -471,7 +476,7 @@ curl https://registry.suse.com/ | grep SUSE
 * Access to a container image registry from the {rke2} cluster.
 //
 +
-A container image registry where the the newly built {nvidia} driver container image will be saved, and from where it will be pulled when deployed across the GPU-enabled Kubernetes worker nodes.
+A container image registry where the the newly built {nvidia} driver container image will be saved, and from where it will be pulled when deployed across the GPU-enabled {k8s} worker nodes.
 This can be a public or a private registry, on-premises or hosted remotely.
 +
 [TIP]
@@ -745,7 +750,7 @@ for EACH in $(sudo podman images | awk '/none/ {print$3}'); do sudo podman rmi $
 +
 [IMPORTANT] 
 ====
-If the target container registry requires authentication, use the {podman-docs}podman-login.1.html[Podman's `login` command] to successfully authenticate before continuing.
+If the target container registry requires authentication, use the {podman-docs}podman-login.1.html[{podman-product}'s `login` command] to successfully authenticate before continuing.
 ====
 +
 ////
@@ -783,7 +788,7 @@ source {nvidia-variables-file} &&
 sudo podman search --list-tags ${REGISTRY}/driver:${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 ----
 +
-. (optional) Validate the container image with Podman
+. (optional) Validate the container image with {podman-product}
 //
 +
 // To validate the container outside the context of Kubernetes, use the worker node on which you installed Podman.
@@ -885,7 +890,7 @@ sudo podman rm driver.${DRIVER_VERSION}-sles${SLE_VERSION}.${SLE_VERSION_SP}
 
 === Troubleshooting
 
-* The build node is not registered correctly with {scc-full} or an RMT server.
+* The build node is not registered correctly with {scc-full}, an {rmt} server, or a {suma} server.
 ** The following error is observed during `podman run` of the driver container: 
 //
 +
@@ -981,39 +986,19 @@ kubectl get configmap -n default {rancher-kubectl-configmap-name} -o json | jq -
 
 . If you want to, you may pull the border between the {rancher-kubectl-shell} image::rancher-pull-button.png[Rancher Pull Button] and the main {rancher} UI down until you need the shell again.
 
-== Deploying to an {rke2} Kubernetes cluster
+== Deploying to an {rke2} {k8s} cluster
 
-Kubernetes provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
+{k8s} provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
 Configuring and managing these resources involves multiple software components, including drivers, libraries, and container runtimes.
 This can be difficult and prone to error.
-The {nvidia-op} helps overcome these difficulties using the Kubernetes operator framework to automate management of {nvidia-org} software components.
+The {nvidia-op} helps overcome these difficulties using the {k8s} operator framework to automate management of {nvidia-org} software components.
 
-The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] Kubernetes package manager.
-//Learn more about {rancher-kubectl-url}[How to Manage Kubernetes with Kubectl].
-
-//In addition to Helm and Kubectl, you also need the {kubernetes-docs}concepts/configuration/organize-cluster-access-kubeconfig/[kubeconfig file] for your target Kubernetes cluster.
+The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] {k8s} package manager.
 Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
 In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
-//Using {rancher-full} to manage your {rke2} cluster allows you to easily run commands on it without having to  the {rancher-docs}how-to-guides/new-user-guides/manage-clusters/access-clusters/use-kubectl-and-kubeconfig#accessing-clusters-with-kubectl-from-your-workstation[download the kubeconfig file] of your cluster for use on your build host or other Linux system.
-
-////
-[NOTE]
-====
-If you are using a system other than your build host to deploy your container, be sure you have:
-
-* Kubectl and Helm
-* the kubeconfig file for your cluster
-* the `/tmp/build-variables.sh` file from <<Setting up your environment>>
-====
-
-[CAUTION]
-====
-The kubeconfig file gives the rights (in many cases administrator level) to make changes to the Kubernetes cluster. Use extra care to keep it secure and remove it from any hosts/nodes after it is no longer needed.
-====
-////
-
-. Before starting your deployment, make sure that the {nvidia-org} kernel modules are not loaded on any of the Kubernetes worker nodes.
-
++
+. Before starting your deployment, make sure that the {nvidia-org} kernel modules are not loaded on any of the {k8s} worker nodes.
++
 .. Log in to each node and list loaded {nvidia-org} kernel modules.
 +
 [source, console]
@@ -1059,22 +1044,7 @@ kubectl get configmap -n default {rancher-kubectl-configmap-name} -o json | jq -
 helm repo add nvidia {nvidia-helm-url}
 helm repo update
 ----
-
-////
-. Verify that you are targeting the correct cluster.
 +
-[source, console]
-----
-echo 
-echo "Cluster name: $(kubectl config current-context)" 
-echo "" 
-kubectl get nodes -o wide 
-echo ""
-----
-+
-If this is not the correct cluster, check that you have properly set up your kubeconfig file.
-////
-
 . Deploy the {nvidia-op} with Helm.
 +
 [source, console, subs="attributes+"]
@@ -1150,6 +1120,15 @@ nvidia-mig-manager-89z9b                                      1/1     Running   
 nvidia-operator-validator-bwx99                               1/1     Running     0          58s
 ----
 
+=== Troubleshooting
+
+* You are unable to unload the {nvidia} kernel modules with the `modprobe -r` command or by rebooting the node.
+//
++
+** Solution: {nvidia} kernel modules are being loaded by one of three sources: 
+. {nvidia} software installed on the host operating system.
+. A container running under {podman-product}, Docker.
+. A Helm chart
 
 == Validating the state of software
 
@@ -1210,13 +1189,13 @@ nvidia-smi
 This command can also be used to verify which application processes are running on the {nvidia-org} GPUs and how many resources are being consumed.
 ====
 +
-The output should be similar to the `nvidia-smi` output when validating the {nvidia-drv} container image functionality through Podman.
+The output should be similar to the `nvidia-smi` output when validating the {nvidia-drv} container image functionality through {podman-product}.
 
 == Cleaning up
 
 After completing this procedure, remove the `{nvidia-variables-file}` and the /tmp/Dockerfile.orig files from the build node, as well as the {rancher-kubectl-configmap-name} ConfigMap.
 
-Also, when ready, remove the Kubernetes cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
+Also, when ready, remove the {k8s} cluster kubeconfig file from the build host and/or any other nodes to which it may have been copied.
 
 == Summary
 
@@ -1241,7 +1220,7 @@ In this guide, you learned how to:
 
 The strategic choice of {sle-bci-full} as the foundation for this integration underscores a commitment to security and supportability.
 Organizations with exacting security requirements depend on the numerous certifications of {sles-full}, including Common Criteria, FIPS, and EAL.
-This is enhanced with the choice of a security focused Kubernetes distribution, such as {rke2-full}.
+This is enhanced with the choice of a security focused {k8s} distribution, such as {rke2-full}.
 With SUSE's commitment to providing robust support for heterogeneous software stacks, customers can design their IT landscapes to suit their unique challenges without compromising on security, capability, or performance.
 
 
