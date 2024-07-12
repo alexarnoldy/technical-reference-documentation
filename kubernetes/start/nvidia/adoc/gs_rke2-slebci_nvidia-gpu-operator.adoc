@@ -1127,8 +1127,24 @@ nvidia-operator-validator-bwx99                               1/1     Running   
 +
 ** Solution: {nvidia} kernel modules are being loaded by one of three sources: 
 . {nvidia} software installed on the host operating system.
-. A container running under {podman-product}, Docker.
-. A Helm chart
+. A container running under {podman-product}.
+. A container running under {k8s} (likely deployed via a Helm chart).
+//
++
+*** Use one of the following commands to see where the {nvidia} software is running from:
++
+[source, console, subs="attributes+"]
+----
+sudo zypper search --installed nvidia
+
+sudo podman ps
+
+# Use the {rancher-kubectl-shell} for `kubectl` commands
+kubectl get pods -A | egrep -i "gpu|nvidia"
+----
++
+*** Resolving the proper removal of the offending software may require advanced skills in the areas of  Linux, {podman-product}, and/or {k8s}.
+Only software specified in this document should be installed or running on the build and GPU-enabled worker nodes.
 
 == Validating the state of software
 
