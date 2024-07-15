@@ -553,7 +553,7 @@ export CUDA_TOOLKIT=""
 +
 [source, console, subs="attributes+"]
 ----
-sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "${CUDA_TOOLKIT}" | grep base-ubi8
+sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "${CUDA_TOOLKIT}" | grep base-ubi8 | sed 's/-base-ubi8//'
 ----
 +
 *** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
@@ -625,11 +625,11 @@ source {nvidia-variables-file} &&
 echo "
 CUDA_VERSION=${CUDA_VERSION} 
 DRIVER_VERSION=${DRIVER_VERSION}
-KERNEL_VERSION=${KERNEL_VERSION}"
-OPERATOR_VERSION="{OPERATOR_VERSION}"
+KERNEL_VERSION=${KERNEL_VERSION}
+OPERATOR_VERSION=${OPERATOR_VERSION}
 REGISTRY=${REGISTRY}
 SLE_VERSION=${SLE_VERSION}
-SLE_VERSION_SP=${SLE_VERSION_SP}
+SLE_VERSION_SP=${SLE_VERSION_SP}"
 ----
 //
 +
@@ -649,7 +649,6 @@ git clone {nvidia-gitlab-drv-url} && cd driver/{nvidia-gitlab-drv-dir}
 +
 .. Make a backup of `Dockerfile` before modifying the original.
 +
-//[source, console]
 [source, console, subs="attributes+"]
 ----
 cp Dockerfile /tmp/Dockerfile.orig
@@ -660,7 +659,6 @@ cp nvidia-driver /tmp/nvidia-driver.orig
 .. Update the `nvidia-driver` file to handle instances where multiple repos are returned when searching for the `Basesystem` repo:
 //
 +
-[console, subs="attributes+"]
 [source, console, subs="attributes+"]
 ----
 if grep -q 'grep "Basesystem"' nvidia-driver; then   echo "The change has already been made.";   else   sed -i 's/\(grep \$version_without_flavor \)/\1| grep "Basesystem" /' nvidia-driver;   echo "The change has been applied."; fi
