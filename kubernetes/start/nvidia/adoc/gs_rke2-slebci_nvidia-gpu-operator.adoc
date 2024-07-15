@@ -99,6 +99,7 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-cuda: {nvidia-org} CUDA Toolkit
 :nvidia-cuda-url: https://developer.nvidia.com/cuda-toolkit
 :nvidia-cuda-version: 12.4.1
+//:nvidia-cuda-version-base: 12.4
 :nvidia-helm-url: https://helm.ngc.nvidia.com/nvidia
 :nvidia-gitlab-url: https://gitlab.com/nvidia
 :nvidia-gitlab-drv-url: {nvidia-gitlab-url}/container-images/driver/
@@ -539,19 +540,24 @@ Also, take note of the *CUDA Toolkit* version.
 * `CUDA_VERSION`: The {nvidia-org} CUDA version appropriate for the selected {nvidia-drv}
 //
 +
-** Use the following command to find the patch versions available for the required CUDA software:
+** Use the following commands to find the patch versions available for the required CUDA software:
 +
-*** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
-//The CUDA version is listed under "Software Versions" when you find your driver version at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
-//+
-////
-* `KERNEL_VERSION`: Use the following command to find the Linux kernel `Version` installed `i+` (likely at the top of the list) on all of the GPU-enabled worker nodes:
+*** Set this variable according to the *CUDA Toolkit* version:
 +
 [source, console, subs="attributes+"]
 ----
-sudo zypper search --details --installed-only kernel-default
+export CUDA_TOOLKIT=""
 ----
-////
++
+*** Run this command to find the most current patch version for the *CUDA Toolkit* software:
++
+[source, console, subs="attributes+"]
+----
+sudo podman search --list-tags --limit 1000 nvidia/cuda | grep "${CUDA_TOOLKIT}" | grep base-ubi8
+----
++
+*** Use the most current patch version that is available, e.g. "{nvidia-cuda-version}"
++
 * `KERNEL_VERSION`: Use the following command to find the Linux kernel version:
 +
 [source, console, subs="attributes+"]
