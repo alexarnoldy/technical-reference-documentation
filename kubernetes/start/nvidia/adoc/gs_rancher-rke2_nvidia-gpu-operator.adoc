@@ -34,21 +34,12 @@ include::./common_docinfo_vars.adoc[]
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // DOCUMENT REVISION DATE
 //-
-:revision-date: YYYY-MM-DD
+:revision-date: 2024-07-29
 :docdate: {revision-date}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// DOCUMENT TITLE AND SUBTITLE
-//   Provide concise but descriptive title and subtitle.
-//   title - (<75 characters) concisely identify the guide.
-//           (e.g.: "Kubeflow with Rancher")
-//   subititle - (<75 characters) expound on the title.
-//               (e.g., "Deploying Kubeflow onto an RKE2 Cluster with Rancher")
-// -
-:title: (<75 characters) Your Guide Title
-:subtitle: (<75 characters) Your Guide Subtitle
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -80,6 +71,61 @@ include::./common_docinfo_vars.adoc[]
 //   You can create additional modifiers as needed.
 //  
 // -
+
+
+:rke2: RKE2
+:rke2-full: Rancher Kubernetes Engine 2
+:rke2-url: https://www.suse.com/products/rancher-kubernetes-engine/
+:rke2-support-matrix: https://www.suse.com/suse-rke2/support-matrix/all-supported-versions/
+:rke2-docs: https://docs.rke2.io/
+:rke2-version: 1.25
+
+:sles: SLES
+:sles-full: SUSE Linux Enterprise Server
+:sles-version: 15
+:sles-sp: 5
+:sles-kernel-version: 5.14.21-150500.55.65-default
+:sles-kernel-version-base: 5.14.21
+:sles-sp-full: SP{sles-sp}
+:sles-url: https://www.suse.com/products/server/
+:sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
+:sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
+
+:rancher: Rancher
+:rancher-full: Rancher Prime
+:rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
+:rancher-docs: https://ranchermanager.docs.rancher.com/
+:rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
+:rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
+:rancher-kubectl-shell: Kubectl Shell
+:rancher-kubectl-shell-variables-file:  /tmp/nvidia-variables
+:rancher-kubectl-configmap-name: nvidia-variables
+
+:rmt: RMT
+:rmt-docs: {sles-docs}/single-html/SLES-rmt/
+:suma: SUSE Manager
+:k8s: Kubernetes
+
+:nvidia-org: NVIDIA
+:nvidia-url: https://nvidia.com
+:nvidia-dc-url: {nvidia-url}/en-us/data-center/
+:nvidia-drv: {nvidia-org} GPU Driver
+:nvidia-drv-version: 550.54.15
+:nvidia-drv-url: https://www.nvidia.com/download/index.aspx
+:nvidia-op: {nvidia-org} GPU Operator
+:nvidia-op-version: v24.3.0
+:nvidia-op-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/
+:nvidia-op-platforms-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html
+:nvidia-cuda: {nvidia-org} CUDA Toolkit
+:nvidia-cuda-url: https://developer.nvidia.com/cuda-toolkit
+:nvidia-cuda-version: 12.4.1
+//:nvidia-cuda-version-base: 12.4
+:nvidia-helm-url: https://helm.ngc.nvidia.com/nvidia
+:nvidia-gitlab-url: https://gitlab.com/nvidia
+:nvidia-gitlab-drv-url: {nvidia-gitlab-url}/container-images/driver/
+:nvidia-gitlab-drv-dir: sle{sles-version}
+:nvidia-license-image-registry: docker.io
+
 
 :comp1-provider: SUSE
 :comp1: component 1 short name
@@ -118,13 +164,13 @@ include::./common_docinfo_vars.adoc[]
 //                            Rancher."
 //
 // -
-:usecase: (<55 characters) use case
 
-:description: (<150 characters) description
-
-:description-short: (<55 characters) social media description
-
-:executive-summary: (<300 characters) brief summary
+:title: {nvidia-drv} and {nvidia-op} with SUSE
+:subtitle: Managing the host installed {nvidia-drv} and {nvidia-op} on {rke2-full} with {rancher}
+:usecase: enable GPU acceleration for containerized workloads
+:executive_summary: Install the {nvidia-drv} deploy the {nvidia-op} to {rke2-full} clusters, managed by {rancher}.
+:description: Deploy {nvidia-op} with {sles-full} and {rke2-full} for {k8s} worker nodes installed with the {nvidia-drv}.
+:description-short: GPU-enabled {k8s} clusters with SUSE
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -138,13 +184,23 @@ include::./common_docinfo_vars.adoc[]
 //   NOTE: To list additional authors or others on the cover page,
 //         you must edit the docinfo.xml file as well.
 // -
-:author1-firstname: first (given) name
-:author1-surname: surname
-:author1-jobtitle: job title
-:author1-orgname: organization affiliation
-//:author2-firstname: first (given) name
-//:contrib1-firstname: first (given) name
-//:editor1-firstname: first (given) name
+:author1_firstname: Alex
+:author1_surname: Arnoldy
+:author1_jobtitle: Global Alliance Solutions Architect
+:author1_orgname: SUSE
+//:contrib1_firstname: Rhys
+//:contrib1_surname: Oxenham
+//:contrib1_jobtitle: Senior Director of Field PM & Engineering - Edge
+//:contrib1_orgname: SUSE
+:contrib2_firstname: Alex
+:contrib2_surname: Zacharow
+:contrib2_jobtitle: Solution Engineer - SW Engineering(Systems)
+:contrib2_orgname: SUSE
+:editor1_firstname: Terry
+:editor1_surname: Smith
+:editor1_jobtitle: Director of Global Partner Solutions
+:editor1_orgname: SUSE
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
