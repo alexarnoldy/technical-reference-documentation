@@ -1,1 +1,1 @@
-../../../common/bin/gssetup.sh
+../../common/bin/gssetup.sh
