@@ -228,8 +228,15 @@ include::./common_docinfo_vars.adoc[]
 // Include any additional, relevant details
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Your introduction and motivation for this guide
+Graphics Processing Units (GPUs) provide unique capabilities for accelerating a broad spectrum of workloads, such as artificial intelligence and machine learning, scientific and engineering simulations, and many more.
+Developing and deploying these workloads in containers on {k8s} clusters offers potential for improved portability, scale, and efficiency.
+However, GPU resources are not automatically visible or accessible to workloads running in containers.
 
+In this guide, you learn how to:
+
+ * install the {nvidia-drv} on each {rke2-full} worker node
+
+ * deploy the {nvidia-op} Helm chart on {rke2-full}
 
 
 === Scope
@@ -239,7 +246,14 @@ Your introduction and motivation for this guide
 //   E.g., "You will learn how to ..."
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-The scope for your guide
+
+This guide covers the following:
+
+* finding and installing the appropriate {nvidia-drv} for the {nvidia-org} GPU installed on the {rke2} cluster
+
+* finding and deploying the appropriate version of the {nvidia-op} Helm chart
+
+* Verifying the functionality of the {nvidia-op} software and the {nvidia-drv}
 
 
 === Audience
