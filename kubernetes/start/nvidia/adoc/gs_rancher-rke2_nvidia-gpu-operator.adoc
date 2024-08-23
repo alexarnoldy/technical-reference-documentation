@@ -265,7 +265,10 @@ This guide covers the following:
 //   - required skills
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-The intended audience for your guide
+
+This guide is intended for high technology professionals (including {k8s} administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
+
+To be successful, you need a foundational understanding of {podman-product} or {docker-product}, {k8s}, and {nvidia-org} GPU technologies.
 
 
 
@@ -281,7 +284,11 @@ The intended audience for your guide
 // NOTE: If there are none, comment out this section.
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-Any acknowledgements you would like to make
+The author wants to acknowledge contributions to this guide by:
+
+* {contrib1_firstname} {contrib1_surname}, {contrib1_orgname}, {contrib1_jobtitle}
+* {contrib2_firstname} {contrib2_surname}, {contrib2_orgname}, {contrib2_jobtitle}
+* {editor1_firstname} {editor1_surname}, {editor1_orgname}, {editor1_jobtitle}
 
 
 
@@ -298,7 +305,53 @@ Any acknowledgements you would like to make
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
+Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
+. Required tools
+//
++
+* If needed, as the root user, install the sudo command: 
+//+
+[source, console, subs="attributes+"]
+----
+zypper install sudo
+----
+//
++
+* Install tools that will be needed to install the {nvidia-drv}: 
+[source, console, subs="attributes+"]
+----
+sudo zypper install pciutils wget kernel-devel gcc make
+----
+//
++
+. {rke2-full} ({rke2})
+//
++
+{rke2-docs}[{rke2}] is the security focused {k8s} distribution developed by SUSE.
++
+Ensure your worker nodes are part of an {rke2} cluster.
+You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to create and configure the cluster.
++
+.  {rancher-full}
+//
++
+Your {rke2} cluster should be under the management of {rancher-full} to allow for installing and maintaining the {nvidia-org} software.
+//
++
+{rancher} provides a shell interface through the management web interface that includes tools like kubectl and Helm. 
+This comes in the form of a non-persistent container running on the {rancher} {k8s} cluster. 
+This approach provides numerous security advantages. 
+Users must first authenticate through {rancher-full} before they can view or manage downstream clusters. 
+This is more secure than providing users with kubeconfig files that don't require authentication and could get checked into a version control system or otherwise end up in the wrong hands.
+In addition, any sensitive data saved in the shell session will be deleted when the container exits.
+//
++
+* {rke2-full} {k8s} cluster
+//
++
+Your {rke2} {k8s} cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
++
 
 == Procedure
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -324,9 +377,16 @@ Any acknowledgements you would like to make
 //
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-
-
-
+. On each GPU configured worker node, deterimine which GPU(s) are installed:
+//
++
+[source, console, subs="attributes+"]
+----
+sudo lspci -v | grep -i nvidia
+----
+//
++
+. Find the latest "Data Center / Tesla" driver for "Linux x64 SLES 15" using "Any CUDA Toolkit Version" for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 
 
 
