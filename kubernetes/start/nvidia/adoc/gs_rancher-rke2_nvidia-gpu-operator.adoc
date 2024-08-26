@@ -321,8 +321,12 @@ zypper install sudo
 * Install tools that will be needed to install the {nvidia-drv}: 
 [source, console, subs="attributes+"]
 ----
-sudo zypper install pciutils wget kernel-devel gcc make
+sudo zypper install pciutils wget 
 ----
+//[source, console, subs="attributes+"]
+//----
+//sudo zypper install pciutils wget kernel-devel gcc make
+//----
 //
 +
 . {rke2-full} ({rke2})
@@ -353,7 +357,7 @@ In addition, any sensitive data saved in the shell session will be deleted when 
 Your {rke2} {k8s} cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
 +
 
-== Procedure
+== Install the {nvidia-drv} on each GPU equipped worker node
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
 // Replace 'Procedure' with one or more appropriate sections, such as:
@@ -386,7 +390,39 @@ sudo lspci -v | grep -i nvidia
 ----
 //
 +
-. Find the latest "Data Center / Tesla" driver for "Linux x64 SLES 15" using "Any CUDA Toolkit Version" for your GPU at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
+. Find the latest "Data Center / Tesla" driver for "Linux x64 SLES 15" using "Any CUDA Toolkit Version" for the GPU(s) installed on your worker nodes at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
++
+[NOTE]
+====
+You can move the driver package to each of the GPU worker nodes in whatever way you wish. One way to do this is described below, but it certainly isn't the only way.
+====
++
+.. Click on the "View" button to see the details for the driver. 
++
+.. Right click on the "Download" button, and select "Copy Link".
++ 
+.. In a terminal window on each GPU worker nodes, download the package with `wget`. For example:
++
+[source, console, subs="attributes+"]
+----
+wget https://us.download.nvidia.com/tesla/560.35.03/nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
+----
+//
++
+. Install the driver package:
+[source, console, subs="attributes+"]
+----
+zypper install ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
+----
+//
++
+[NOTE]
+====
+You may get an error about the Gpg Key not being available (e.g. Signature verification failed [4-Signatures public key is not available]). You can safely ignore this error.
+====
++
+
+
 
 
 
