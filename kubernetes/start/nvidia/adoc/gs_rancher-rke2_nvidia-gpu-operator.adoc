@@ -445,8 +445,28 @@ sudo rpm -i ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
 ----
 sudo zypper install cuda-drivers
 ----
++
+. Reboot each GPU equipped worker node, one at a time:
+[source, console, subs="attributes+"]
+----
+sudo reboot
+----
++
+. After each worker node has successfully rebooted, ensure the {nvidia-org} kernel modules have been loaded:
++
+[source, console]
+----
+sudo lsmod | grep nvidia
+----
++
+You should see the `nvidia`, `nvidia_drm`, `nvidia_modeset`, and `nvidia_uvm` kernel modules have been loaded.
 
-
+. Verify the `nvidia-smi` utility can communicate with the GPU.
++
+[source, console, subs="attributes+"]
+----
+sudo nvidia-smi
+----
 
 
 == Summary
