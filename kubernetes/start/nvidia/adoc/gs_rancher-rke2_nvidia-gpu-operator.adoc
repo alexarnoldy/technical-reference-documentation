@@ -83,7 +83,7 @@ include::./common_docinfo_vars.adoc[]
 :sles: SLES
 :sles-full: SUSE Linux Enterprise Server
 :sles-version: 15
-:sles-sp: 5
+:sles-sp: 6
 :sles-kernel-version: 5.14.21-150500.55.65-default
 :sles-kernel-version-base: 5.14.21
 :sles-sp-full: SP{sles-sp}
@@ -307,6 +307,29 @@ The author wants to acknowledge contributions to this guide by:
 
 Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
+. {sles-full} modules
+//
++
+Modules and extenions provide additional functionality to your {sles-full} system.
+//
++
+Enable the Containers, Desktop Applications, and Development Tools {sles-docs-modules}[modules]:
++
+[source, console, subs="attributes+"]
+----
+VER={sles-version}
+SP={sles-sp}
+#sudo SUSEConnect -p sle-module-containers/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-desktop-applications/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-development-tools/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
+----
++
+[NOTE]
+====
+This procedure has been validated with {sles-full} {sles-version} SP{sles-sp}.
+====
++
 . Required tools
 //
 +
@@ -412,16 +435,16 @@ wget https://us.download.nvidia.com/tesla/560.35.03/nvidia-driver-local-repo-sle
 . Install the driver package:
 [source, console, subs="attributes+"]
 ----
-zypper install ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
+sudo rpm -i ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
 ----
 //
 +
-[NOTE]
-====
-You may get an error about the Gpg Key not being available (e.g. Signature verification failed [4-Signatures public key is not available]). You can safely ignore this error.
-====
+. Install the CUDA drivers:
 +
-
+[source, console, subs="attributes+"]
+----
+sudo zypper install cuda-drivers
+----
 
 
 
