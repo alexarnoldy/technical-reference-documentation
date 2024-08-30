@@ -106,8 +106,8 @@ include::./common_docinfo_vars.adoc[]
 :suma: SUSE Manager
 :kubectl-docs: https://kubernetes.io/docs/
 :helm-docs: https://helm.sh/docs/
+:helm-org: Helm
 :kubernetes-docs: https://kubernetes.io/docs/
-:docker-product: Docker
 :k8s: Kubernetes
 
 :nvidia-org: NVIDIA
@@ -128,7 +128,6 @@ include::./common_docinfo_vars.adoc[]
 :nvidia-gitlab-url: https://gitlab.com/nvidia
 :nvidia-gitlab-drv-url: {nvidia-gitlab-url}/container-images/driver/
 :nvidia-gitlab-drv-dir: sle{sles-version}
-:nvidia-license-image-registry: docker.io
 
 
 :comp1-provider: SUSE
@@ -240,7 +239,7 @@ In this guide, you learn how to:
 
  * install the {nvidia-drv} on each {rke2-full} worker node
 
- * deploy the {nvidia-op} Helm chart on {rke2-full}
+ * deploy the {nvidia-op} {helm-org} chart on {rke2-full}
 
 
 === Scope
@@ -255,7 +254,7 @@ This guide covers the following:
 
 * finding and installing the appropriate {nvidia-drv} for the {nvidia-org} GPU installed on the {rke2} cluster
 
-* finding and deploying the appropriate version of the {nvidia-op} Helm chart
+* finding and deploying the appropriate version of the {nvidia-op} {helm-org} chart
 
 * Verifying the functionality of the {nvidia-op} software and the {nvidia-drv}
 
@@ -272,7 +271,7 @@ This guide covers the following:
 
 This guide is intended for high technology professionals (including {k8s} administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
 
-To be successful, you need a foundational understanding of {podman-product} or {docker-product}, {k8s}, and {nvidia-org} GPU technologies.
+To be successful, you need a foundational understanding of Linux, {k8s}, and {nvidia-org} GPU technologies.
 
 
 
@@ -290,7 +289,7 @@ To be successful, you need a foundational understanding of {podman-product} or {
 
 The author wants to acknowledge contributions to this guide by:
 
-* {contrib1_firstname} {contrib1_surname}, {contrib1_orgname}, {contrib1_jobtitle}
+* {author1_firstname} {author1_surname}, {author1_orgname}, {author1_jobtitle}
 * {contrib2_firstname} {contrib2_surname}, {contrib2_orgname}, {contrib2_jobtitle}
 * {editor1_firstname} {editor1_surname}, {editor1_orgname}, {editor1_jobtitle}
 
@@ -372,7 +371,7 @@ You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or
 Your {rke2} cluster should be under the management of {rancher-full} to allow for installing and maintaining the {nvidia-org} software.
 //
 +
-{rancher} provides a shell interface through the management web interface that includes tools like kubectl and Helm. 
+{rancher} provides a shell interface through the management web interface that includes tools like kubectl and {helm-org}. 
 This comes in the form of a non-persistent container running on the {rancher} {k8s} cluster. 
 This approach provides numerous security advantages. 
 Users must first authenticate through {rancher-full} before they can view or manage downstream clusters. 
@@ -502,7 +501,7 @@ This can be difficult and prone to error.
 The {nvidia-op} helps overcome these difficulties using the {k8s} operator framework to automate management of {nvidia-org} software components.
 
 The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] {k8s} package manager.
-Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
+Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and {helm-org} without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
 In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
 
 . Log in to your {rancher} server.
@@ -519,14 +518,14 @@ helm repo add nvidia {nvidia-helm-url}
 helm repo update
 ----
 +
-. Set this variable for the most current version of the {helm} chart:
+. Set this variable for the most current version of the {helm-org} chart:
 +
 [source, console, subs="attributes+"]
 ----
 export OPERATOR_VERSION=$(helm search repo nvidia/gpu-operator | grep 'gpu' | cut -f 2) && echo ${OPERATOR_VERSION}
 ----
 +
-. Deploy the {nvidia-op} with Helm:
+. Deploy the {nvidia-op} with {helm-org}:
 +
 [source, console, subs="attributes+"]
 ----
@@ -547,7 +546,7 @@ helm install -n gpu-operator \
   --set-string toolkit.env[3].value=true
 ----
 +
-. The {nvidia-op} Helm chart has been successfully deployed when it shows the output:
+. The {nvidia-op} {helm-org} chart has been successfully deployed when it shows the output:
 +
 [listing]
 ----
@@ -567,6 +566,58 @@ You should see output similar to the following:
 +
 [listing]
 ----
+NAME                                                              READY   STATUS        RESTARTS   AGE
+gpu-feature-discovery-vl88c                                       1/1     Running       0          1h
+gpu-operator-1722528349-node-feature-discovery-prune-mskxx        0/1     Completed     0          1h
+gpu-operator-1724973943-node-feature-discovery-gc-5f6ffbb6vbcw6   1/1     Running       0          1h
+gpu-operator-1724973943-node-feature-discovery-master-64d4mwvdn   1/1     Running       0          1h
+gpu-operator-1724973943-node-feature-discovery-worker-8st9m       1/1     Running       0          1h
+gpu-operator-1724973943-node-feature-discovery-worker-rm9m7       1/1     Running       0          1h
+gpu-operator-68b4f6cc9c-sc7bc                                     1/1     Running       0          1h
+nvidia-container-toolkit-daemonset-f6xl8                          1/1     Running       0          1h
+nvidia-cuda-validator-dc5l5                                       0/1     Completed     0          1h
+nvidia-dcgm-exporter-z469h                                        1/1     Running       0          1h
+nvidia-device-plugin-daemonset-5vcjt                              1/1     Running       0          1h
+nvidia-mig-manager-89v9f                                          1/1     Running       0          1h
+nvidia-operator-validator-ggk82                                   1/1     Running       0          1h
+----
+
+
+== Validating the state of software
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// Illustrate functionality with a demonstration.
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+The {nvidia-op} {helm-org} chart provides two pods that validate the state of the installed software.
+
+. Validate the state of the {nvidia-op} software.
++
+[source, console]
+----
+kubectl logs -n gpu-operator -l app=nvidia-operator-validator -c nvidia-operator-validator
+----
++
+The output should be similar to:
++
+[listing]
+====
+*all validations are successful*
+====
+
+. Validate the state of the {nvidia-cuda} software.
++
+[source, console]
+----
+kubectl logs -n gpu-operator -l app=nvidia-cuda-validator -c nvidia-cuda-validator
+----
++
+The output should be similar to:
++
+[listing]
+====
+*cuda workload validation is successful*
+====
 
 == Summary
 
@@ -577,6 +628,23 @@ You should see output similar to the following:
 // - What was done
 // - Suggested next steps for the learning journey
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+Graphics Processing Units (GPUs) have become an essential technology of the modern era, accelerating time to insight and expanding capabilities.
+GPUs have had dramatic impacts in artificial intelligence, machine learning, scientific and engineering simulation, and other high-performance computing applications.
+Equally dramatic have been the impacts of container technologies, reshaping how applications are developed, deployed, and managed.
+Bringing these two technologies together offers many benefits, including faster development, improved application portability, easier scaling, and streamlined administration.
+
+In this guide, you learned how to:
+
+* find and install the appropriate {nvidia-drv} on GPU equipped worker nodes
+
+* deploy the {nvidia-op} {helm-org} chart on {rke2-full} clusters
+
+
+The strategic choice of {sles-full} as the foundation for this design underscores a commitment to security and supportability.
+Organizations with exacting security requirements depend on the numerous certifications of {sles-full}, including Common Criteria, FIPS, and EAL.
+This is enhanced with the choice of a security focused {k8s} distribution, such as {rke2-full}.
+With SUSE's commitment to providing robust support for heterogeneous software stacks, customers can design their IT landscapes to suit their unique challenges without compromising on security, capability, or performance.
 
 
 
