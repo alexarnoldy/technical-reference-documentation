@@ -104,6 +104,10 @@ include::./common_docinfo_vars.adoc[]
 :rmt: RMT
 :rmt-docs: {sles-docs}/single-html/SLES-rmt/
 :suma: SUSE Manager
+:kubectl-docs: https://kubernetes.io/docs/
+:helm-docs: https://helm.sh/docs/
+:kubernetes-docs: https://kubernetes.io/docs/
+:docker-product: Docker
 :k8s: Kubernetes
 
 :nvidia-org: NVIDIA
@@ -313,28 +317,12 @@ Before you embark on the procedures outlined in this guide, ensure that your env
 Modules and extenions provide additional functionality to your {sles-full} system.
 //
 +
-Enable the Containers, Desktop Applications, and Development Tools {sles-docs-modules}[modules]:
-+
-[source, console, subs="attributes+"]
-----
-VER={sles-version}
-SP={sles-sp}
-#sudo SUSEConnect -p sle-module-containers/$\{VER\}.$\{SP\}/x86_64
-sudo SUSEConnect -p sle-module-desktop-applications/$\{VER\}.$\{SP\}/x86_64
-sudo SUSEConnect -p sle-module-development-tools/$\{VER\}.$\{SP\}/x86_64
-sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
-----
-+
-[NOTE]
-====
-This procedure has been validated with {sles-full} {sles-version} SP{sles-sp}.
-====
-+
 . Required tools
 //
 +
 * If needed, as the root user, install the sudo command: 
-//+
+//
++
 [source, console, subs="attributes+"]
 ----
 zypper install sudo
@@ -342,6 +330,8 @@ zypper install sudo
 //
 +
 * Install tools that will be needed to install the {nvidia-drv}: 
+//
++
 [source, console, subs="attributes+"]
 ----
 sudo zypper install pciutils wget 
@@ -351,6 +341,22 @@ sudo zypper install pciutils wget
 //sudo zypper install pciutils wget kernel-devel gcc make
 //----
 //
++
+Enable the Desktop Applications, Development Tools, and {nvidia-org} Compute {sles-docs-modules}[modules]:
++
+[source, console, subs="attributes+"]
+----
+VER={sles-version}
+SP={sles-sp}
+sudo SUSEConnect -p sle-module-desktop-applications/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-development-tools/$\{VER\}.$\{SP\}/x86_64
+sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
+----
++
+[NOTE]
+====
+This procedure has been validated with {sles-full} {sles-version} SP{sles-sp}.
+====
 +
 . {rke2-full} ({rke2})
 //
@@ -378,9 +384,10 @@ In addition, any sensitive data saved in the shell session will be deleted when 
 //
 +
 Your {rke2} {k8s} cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
-+
+
 
 == Install the {nvidia-drv} on each GPU equipped worker node
+
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 // Detail the steps of the installation procedure.
 // Replace 'Procedure' with one or more appropriate sections, such as:
@@ -413,6 +420,16 @@ sudo lspci -v | grep -i nvidia
 ----
 //
 +
+. Remove all {nvidia-org} packages that have been previously installed:
+//
++
+[source, console, subs="attributes+"]
+----
+sudo zypper remove *nvidia*
+----
+//
++
+
 . Find the latest "Data Center / Tesla" driver for "Linux x64 SLES 15" using "Any CUDA Toolkit Version" for the GPU(s) installed on your worker nodes at {nvidia-drv-url}[{nvidia-org} Driver Downloads].
 +
 [NOTE]
@@ -420,11 +437,13 @@ sudo lspci -v | grep -i nvidia
 You can move the driver package to each of the GPU worker nodes in whatever way you wish. One way to do this is described below, but it certainly isn't the only way.
 ====
 +
+.. Click on the "Find" button.
++
 .. Click on the "View" button to see the details for the driver. 
 +
 .. Right click on the "Download" button, and select "Copy Link".
 + 
-.. In a terminal window on each GPU worker nodes, download the package with `wget`. For example:
+.. In a terminal window on each GPU worker nodes, download the package with the `wget` command. For example:
 +
 [source, console, subs="attributes+"]
 ----
@@ -432,10 +451,11 @@ wget https://us.download.nvidia.com/tesla/560.35.03/nvidia-driver-local-repo-sle
 ----
 //
 +
-. Install the driver package:
+. Install the driver package with the `sudo rpm -i` command. For example:
++
 [source, console, subs="attributes+"]
 ----
-sudo rpm -i ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
+sudo zypper install ./nvidia-driver-local-repo-sles15-560.35.03-1.0-1.x86_64.rpm
 ----
 //
 +
@@ -447,6 +467,7 @@ sudo zypper install cuda-drivers
 ----
 +
 . Reboot each GPU equipped worker node, one at a time:
++
 [source, console, subs="attributes+"]
 ----
 sudo reboot
@@ -468,6 +489,84 @@ You should see the `nvidia`, `nvidia_drm`, `nvidia_modeset`, and `nvidia_uvm` ke
 sudo nvidia-smi
 ----
 
+== Deploying the {nvidia-op} to an {rke2} {k8s} cluster
+
+The remainder of this process will be completed through the {rancher} UI. 
+Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation.
+Working through the {rancher} UI ensures all administrative actions are performed through an authenticated session.
+In addition, no sensitive data, such as a kubeconfig file, can fall into the wrong hands.
+
+{k8s} provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
+Configuring and managing these resources involves multiple software components, including drivers, libraries, and container runtimes.
+This can be difficult and prone to error.
+The {nvidia-op} helps overcome these difficulties using the {k8s} operator framework to automate management of {nvidia-org} software components.
+
+The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] {k8s} package manager.
+Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and Helm without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
+In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
+
+. Log in to your {rancher} server.
++
+. Select your cluster, then click the `Explore` button (if shown).
++
+. Click the {rancher-kubectl-shell} icon at the top right of the window.
++
+. When the {rancher-kubectl-shell} is ready, add the {nvidia-org} helm software repository:
++
+[source, console, subs="attributes+"]
+----
+helm repo add nvidia {nvidia-helm-url}
+helm repo update
+----
++
+. Set this variable for the most current version of the {helm} chart:
++
+[source, console, subs="attributes+"]
+----
+export OPERATOR_VERSION=$(helm search repo nvidia/gpu-operator | grep 'gpu' | cut -f 2) && echo ${OPERATOR_VERSION}
+----
++
+. Deploy the {nvidia-op} with Helm:
++
+[source, console, subs="attributes+"]
+----
+helm install -n gpu-operator \ 
+  --generate-name \ 
+  --wait \ 
+  --create-namespace \ 
+  --version=${OPERATOR_VERSION} \ 
+  nvidia/gpu-operator \ 
+  --set operator.defaultRuntime=containerd \ 
+  --set toolkit.env[0].name=CONTAINERD_CONFIG \ 
+  --set toolkit.env[0].value=/var/lib/rancher/rke2/agent/etc/containerd/config.toml \ 
+  --set toolkit.env[1].name=CONTAINERD_SOCKET \ 
+  --set toolkit.env[1].value=/run/k3s/containerd/containerd.sock \ 
+  --set toolkit.env[2].name=CONTAINERD_RUNTIME_CLASS \ 
+  --set toolkit.env[2].value=nvidia \ 
+  --set toolkit.env[3].name=CONTAINERD_SET_AS_DEFAULT \ 
+  --set-string toolkit.env[3].value=true
+----
++
+. The {nvidia-op} Helm chart has been successfully deployed when it shows the output:
++
+[listing]
+----
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+----
++
+. Verify the {nvidia-op}, {nvidia-drv}, and associated elements have been deployed correctly.
++
+[source, console]
+----
+kubectl get pods -n gpu-operator
+----
++
+You should see output similar to the following:
++
+[listing]
+----
 
 == Summary
 
