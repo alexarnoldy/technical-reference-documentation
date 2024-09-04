@@ -171,7 +171,7 @@ include::./common_docinfo_vars.adoc[]
 :title: {nvidia-drv} and {nvidia-op} with SUSE
 :subtitle: Managing the host installed {nvidia-drv} and {nvidia-op} on {rke2-full} with {rancher}
 :usecase: enable GPU acceleration for containerized workloads
-:executive_summary: Install the {nvidia-drv} deploy the {nvidia-op} to {rke2-full} clusters, managed by {rancher}.
+:executive-summary: Install the {nvidia-drv} deploy the {nvidia-op} to {rke2-full} clusters, managed by {rancher}.
 :description: Deploy {nvidia-op} with {sles-full} and {rke2-full} for {k8s} worker nodes installed with the {nvidia-drv}.
 :description-short: GPU-enabled {k8s} clusters with SUSE
 
@@ -187,22 +187,22 @@ include::./common_docinfo_vars.adoc[]
 //   NOTE: To list additional authors or others on the cover page,
 //         you must edit the docinfo.xml file as well.
 // -
-:author1_firstname: Alex
-:author1_surname: Arnoldy
-:author1_jobtitle: Global Alliance Solutions Architect
-:author1_orgname: SUSE
+:author1-firstname: Alex
+:author1-surname: Arnoldy
+:author1-jobtitle: Global Alliance Solutions Architect
+:author1-orgname: SUSE
 //:contrib1_firstname: Rhys
 //:contrib1_surname: Oxenham
 //:contrib1_jobtitle: Senior Director of Field PM & Engineering - Edge
 //:contrib1_orgname: SUSE
-:contrib2_firstname: Alex
-:contrib2_surname: Zacharow
-:contrib2_jobtitle: Solution Engineer - SW Engineering(Systems)
-:contrib2_orgname: SUSE
-:editor1_firstname: Terry
-:editor1_surname: Smith
-:editor1_jobtitle: Director of Global Partner Solutions
-:editor1_orgname: SUSE
+:contrib2-firstname: Alex
+:contrib2-surname: Zacharow
+:contrib2-jobtitle: Solution Engineer - SW Engineering(Systems)
+:contrib2-orgname: SUSE
+:editor1-firstname: Terry
+:editor1-surname: Smith
+:editor1-jobtitle: Director of Global Partner Solutions
+:editor1-orgname: SUSE
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -289,9 +289,9 @@ To be successful, you need a foundational understanding of Linux, {k8s}, and {nv
 
 The author wants to acknowledge contributions to this guide by:
 
-* {author1_firstname} {author1_surname}, {author1_orgname}, {author1_jobtitle}
-* {contrib2_firstname} {contrib2_surname}, {contrib2_orgname}, {contrib2_jobtitle}
-* {editor1_firstname} {editor1_surname}, {editor1_orgname}, {editor1_jobtitle}
+* {author1-firstname} {author1-surname}, {author1-orgname}, {author1-jobtitle}
+* {contrib2-firstname} {contrib2-surname}, {contrib2-orgname}, {contrib2-jobtitle}
+* {editor1-firstname} {editor1-surname}, {editor1-orgname}, {editor1-jobtitle}
 
 
 
@@ -520,14 +520,14 @@ helm repo update
 +
 . Set this variable for the most current version of the {helm-org} chart:
 +
-[source, console, subs="attributes+"]
+[source, console]
 ----
 export OPERATOR_VERSION=$(helm search repo nvidia/gpu-operator | grep 'gpu' | cut -f 2) && echo ${OPERATOR_VERSION}
 ----
 +
 . Deploy the {nvidia-op} with {helm-org}:
 +
-[source, console, subs="attributes+"]
+[source, console]
 ----
 helm install -n gpu-operator \ 
   --generate-name \ 
