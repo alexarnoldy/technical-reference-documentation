@@ -543,6 +543,7 @@ helm install -n gpu-operator \
   --set toolkit.env[2].name=CONTAINERD_RUNTIME_CLASS \ 
   --set toolkit.env[2].value=nvidia \ 
   --set toolkit.env[3].name=CONTAINERD_SET_AS_DEFAULT \ 
+  --set driver.enabled=false \
   --set-string toolkit.env[3].value=true
 ----
 +
