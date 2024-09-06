@@ -3,35 +3,45 @@
 <dm:docmanager xmlns:dm="urn:x-suse:ns:docmanager">
     <dm:bugtracker>
         <dm:url>https://github.com/SUSE/technical-reference-documentation/issues/new</dm:url>
-	<!--  <dm:product>{title}</dm:product> -->
+        <dm:product>{title}</dm:product>
     </dm:bugtracker>
 </dm:docmanager>
 
+
 <!-- Note to author/editor
-     - This docinfo.xml file uses attributes/variables to minimize the
-       need for edits.
-     - Attributes/variables are referenced here with curly braces
-       (e.g., {title}).
-     - General variables are defined in common_docinfo_vars.adoc.
-     - Document-specific variables are defined in your adoc file.
-     - Sections you may need to edit include:
-       - 'component metadata': if additional SUSE components need to
-         be highlighted
-       - 'author metadata': if additional authors should be listed
-         on the cover page
-       - 'cover logo images': if a different cover page logo is
-         required
+     - This docinfo XML file features metadata that helps identify
+       the contents of your document.
+     - It uses attributes/variables to minimize the number of edits
+       needed in this file.
+     - Attributes/variables are defined in your adoc file and
+       referenced here with curly braces (e.g., {title}).
+     - See the comments in this document for information on
+       metadata tags and potential edits.
+     - Find more details on attribute/variables in adoc file comments.
+
 -->
+
 
 
 <!-- document organization metadata
-     <orgname>Technical Reference Documentation</orgname>
+     Do NOT edit these metadata tags.
 -->
-<meta name="series">{trd}</meta>
-<meta name="type">{type}</meta>
+<meta name="series">Technical References</meta>
+<meta name="type">Getting Started</meta>
 
 
-<!-- document title and subtitle -->
+<!-- document revision date
+     Do NOT edit this metadata tag.
+     Remember to update the value of revision-date in your adoc file.
+-->
+<meta name="updated">{docdate}</meta>
+
+
+
+<!-- document title and subtitle
+     Do NOT edit these metadata tags.
+     Be sure to set title and subtitle values in your adoc file.
+-->
 <title>{title}</title>
 <subtitle>{subtitle}</subtitle>
 
@@ -40,38 +50,58 @@
 <meta name="updated">{revision-date}</meta>
 
 
-<!-- descriptions -->
-<meta name="description" xmlns:its="https://www.w3.org/2005/11/its" its:translate="yes">{description}</meta>
-<meta name="social-desc" xmlns:its="https://www.w3.org/2005/11/its" its:translate="yes">{description-short}</meta>
 
-
-<!-- SUSE component metadata
-     Replicate and follow the pattern to list additional SUSE components.
-     Variables are defined in the adoc file.
-
-     '<productname>' references the short name of the SUSE component.
-     '<platform>' references the full/long name of the SUSE component.
+<!-- descriptions
+     Do NOT edit these metadata tags.
+     Remember to set values for description and description-social
+     in your vars file.
+     NOTE:
+       - description may be up to 150 characters
+       - description-social may be up to 55 characters
 -->
-<meta name="productname">
-  <productname version="{comp1-version}">{comp1}</productname>
+<meta name="description">{description}</meta>
+<meta name="social-desc">{description-social}</meta>
+
+
+<!-- tasks
+     - Tasks are used for filtering in the SUSE Documentation portal.
+     - Tasks are predefined phrases, which you can learn more about
+       in the adoc file and in the contributors guide.
+     - Repeat the phrase element for additional tasks.
+     - Be sure metataskX variables are defined in your adoc file.
+-->
+<meta name="task">
+    <phrase>{metatask1}</phrase>
 </meta>
-<meta name="platform">{comp1-full}</meta>
+
+
+
+<!-- SUSE components -->
+<meta name="productname">
+  <productname version="{rancher-version}">{rancher-full}</productname>
+  <productname version="{rke2-version}">{rke2-full}</productname>
+  <productname version="{sles-version} SP{sles-sp}">{sles-full}</productname>
+</meta>
+
+
+<!-- SUSE product listing for Google Analytics -->
+<productname>{rancher-full} {rancher-version}, {rke2-full} {rke2-version}, {sles-full} {sles-version} SP{sles-sp}</productname>
+
+
+<!-- SUSE platform
+     NOTE: This metadata tag will be deprecated in the next template release.
+-->
+<meta name="platform">{rancher-full} {rancher-version}</meta>
 
 
 <!-- Partner metadata
-     Identify technical partners (businesses or organizations)
-     supplying components featured in the guide.
-     Replicate the pattern to identify additional partners.
+     Identify ONLY ONE technical partner (business or organization name)
+     supplying a component of the solution.
 -->
-<meta name="techpartner">
-  <phrase>{comp2-provider}</phrase>
-</meta>
+<meta name="techpartner">{nvidia-org}</meta>
 
 
 <!-- author metadata
-     Replicate author tag structure inside this authorgroup
-     for additional authors.
-     Be sure to create/update appropriate variables in adoc file.
      NOTE: Editors and other contributors can be acknowledged in
      an acknowledgement section in the adoc file.
 -->
@@ -147,6 +177,29 @@
     </imageobject>
   </mediaobject>
 </cover>
+
+
+<!-- revision history
+     Provide a complete revision history in reverse chronological order
+     (most recent first).
+     Each revision must include the data and a brief description.
+     Define revision variables (rev?-data, rev?-description) in the
+     vars file.
+-->
+<revhistory xml:id="rh-art-{article-id}">
+  <revision>
+    <date>{rev2-date}</date>
+    <revdescription>
+      <para>{rev2-description}</para>
+    </revdescription>
+  </revision>
+  <revision>
+    <date>{rev1-date}</date>
+    <revdescription>
+      <para>{rev1-description}</para>
+    </revdescription>
+  </revision>
+</revhistory>
 
 <!-- brief abstract for document
      Update with an enticing summary.

@@ -1,0 +1,325 @@
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// SUSE Technical Reference Documentation
+// Getting Started Guide
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// GENERAL GUIDANCE
+//
+// See the Contributors Guide for more information:
+// https://documentation.suse.com/trd/contributors/single-html/suse-trd_contrib-guide/
+//
+// Some points to keep in mind include:
+// - This is a *getting started* guide and should illustrate a
+//   solution through simple steps that the reader can follow
+//   focused around a use case.
+// - Write to the audience you are trying to reach.
+// - Organize the guide as best fits the purpose.
+//   Typical organization includes the following sections:
+//   - Introduction - solution description, motivation, audience, needed skills
+//   - Prerequisites - technologies reader should have have in place
+//   - Installation - provide steps to perform installation of components
+//   - Configuration - provide steps for any post-installation configurations
+//   - Validation - provide steps to validate/demonstrate function
+//   - Summary - summarize what was covered and suggest additional learning
+// - Conform to the SUSE Documentation Style
+//   https://documentation.suse.com/style/current/single-html/docu_styleguide/index.html
+//
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DIRECTORY & FILE STRUCTURE
+//
+// SUSE TRD getting started guides are built with multiple source files
+// that provide content, metadata, and structure.
+// These files are
+// Principal among these files are:
+// - Doc Config file:   Provides processing guidance, including
+//                      which stylesheet to use, document type,
+//                      draft status, name of the main AsciiDoc
+//                      content file, and more.
+//                      The is one DC file per guide and it is located
+//                      at the root of the project directory.
+//                      There is one DC file per guide.
+// - DocBook Info file: Provides metadata to describe the contents.
+//                      There is one DOCINFO file per guide and it is
+//                      located in the adoc subdirectory.
+// - ASCIIDoc files:    AsciiDoc is the lightweight, semantic markup
+//                      language designed for writing technical
+//                      content.
+//                      There is one main ADOC file per guide, which can
+//                      be accompanied by multiple ancillary ADOC files.
+//                      These file are located in the adoc subdirectory
+//                      and are merged ("included") during when the
+//                      document is rendered for publication.
+//                      Some additional ADOC files that are common to all
+//                      guides, including the GNU Free Documentation License
+//                      and the disclaimer, are located elsewhere and
+//                      "included" automatically by these templates.
+// - Media files:       Graphical content, such as diagrams, screenshots,
+//                      and logos can enhance your document.
+//                      Media files are stored under the media subdirectory
+//                      by image type.
+//                      Preferred image formats are:
+//                      - Scaled Vector Graphics (SVG)
+//                      - Portable Network Graphics (PNG)
+//
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+// DOCUMENT ATTRIBUTES AND VARIABLES
+//
+// NOTES:
+// 1. Define and use document attributes or variables in this file.
+// 2. Update the docinfo.xml file if needed.
+//
+// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT REVISION DATE
+//-
+:revision-date: 2024-09-06
+:docdate: {revision-date}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// ARTICLE IDENTIFIER
+//   Provide a unique article identifier.
+//   This is typically a series of words (often from the document title)
+//   separated by hyphens (-).
+//   (e.g., "rancher-kubflow-deployment")
+:article-id: rancher-sles-nvidia-operator-driver
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT REVISION HISTORY
+//
+// Provide a complete revision history in reverse chronological order.
+// E.g.:
+//   :rev3-date: 2026-01-25
+//   :rev3-description: Updated product versions
+//   :rev2-date: 2025-05-18
+//   :rev2-description: Fixed installation script typo
+//   :rev1-date: 2024-09-06
+//   :rev1-description: Original version
+//-
+:rev2-date: 2024-09-04
+:rev2-description: Simplified focus to host driver and Kubernetes operator
+:rev1-date: 2023-12-07
+:rev1-description: Original version
+:docdate: {rev2-date}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TECHNICAL COMPONENTS
+//   Identify the technical components featured in the guide.
+//   Use variables to store information about the solution components.
+//   This makes it much easier to update the document for future
+//   version upgrades, URL changes, etc.
+//
+//   Variable names follow a simple pattern:
+//   - compX[-MODIFIER]
+//   where:
+//   - X is an integer starting from 1 for the primary component,
+//     2 for a secondary component, and so on.
+//   - -MODIFIER is text that identifies the stored information.
+//   Some -MODIFIER values include:
+//   - EMPTY: If the modifier is missing, the variable contains
+//     a short name for the component (e.g., 'SLES', 'Rancher Prime')
+//   - -full: Long name of the component
+//     (e.g., 'SUSE Linux Enterprise Server', 'Rancher Prime by SUSE')
+//   - -provider: Name of company or project providing the component
+//     (e.g., 'SUSE', 'HPE', 'Kubeflow', 'Veeam')
+//   - -version1: A relevant product version (e.g., '15', '15 SP5', '3.1.2')
+//                Additional product versions must be listed separately
+//                (e.g., '-version2: 15 SP6')
+//   - -website: Product website (e.g., https://www.suse.com/products/server/)
+//   - -docs: Product documentation (e.g., https://documentation.suse.com/sles/)
+//
+//   You can create additional modifiers as needed.
+//
+// -
+:rke2: RKE2
+:rke2-full: Rancher Kubernetes Engine 2
+:rke2-url: https://www.suse.com/products/rancher-kubernetes-engine/
+:rke2-support-matrix: https://www.suse.com/suse-rke2/support-matrix/all-supported-versions/
+:rke2-docs: https://docs.rke2.io/
+:rke2-version: 1.30.2+rke2r1
+
+:sles: SLES
+:sles-full: SUSE Linux Enterprise Server
+:sles-version: 15
+:sles-sp: 6
+:sles-kernel-version: 5.14.21-150500.55.65-default
+:sles-kernel-version-base: 5.14.21
+:sles-sp-full: SP{sles-sp}
+:sles-url: https://www.suse.com/products/server/
+:sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
+:sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
+
+:rancher: SUSE Rancher
+:rancher-full: SUSE Rancher Prime
+:rancher-version: 2.9.0
+:rancher-url: https://www.suse.com/solutions/enterprise-container-management/#rancher-product
+:rancher-docs: https://ranchermanager.docs.rancher.com/
+:rancher-docs-rke2: {rancher-docs}pages-for-subheaders/launch-kubernetes-with-rancher#rke2
+:rancher-kubectl-url: https://www.suse.com/c/rancher_blog/how-to-manage-kubernetes-with-kubectl/
+:rancher-kubectl-shell: Kubectl Shell
+:rancher-kubectl-shell-variables-file: /tmp/nvidia-variables
+:rancher-kubectl-configmap-name: nvidia-variables
+
+:rmt: RMT
+:rmt-docs: {sles-docs}/single-html/SLES-rmt/
+:suma: SUSE Manager
+:kubectl-docs: https://kubernetes.io/docs/
+:helm-docs: https://helm.sh/docs/
+:helm-org: Helm
+:kubernetes-docs: https://kubernetes.io/docs/
+:k8s: Kubernetes
+
+:nvidia-org: NVIDIA
+:nvidia-url: https://nvidia.com
+:nvidia-dc-url: {nvidia-url}/en-us/data-center/
+:nvidia-drv: {nvidia-org} GPU Driver
+:nvidia-drv-version: 550.54.15
+:nvidia-drv-url: https://www.nvidia.com/download/index.aspx
+:nvidia-op: {nvidia-org} GPU Operator
+:nvidia-op-version: v24.3.0
+:nvidia-op-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/
+:nvidia-op-platforms-url: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html
+:nvidia-cuda: {nvidia-org} CUDA Toolkit
+:nvidia-cuda-url: https://developer.nvidia.com/cuda-toolkit
+:nvidia-cuda-version: 12.4.1
+//:nvidia-cuda-version-base: 12.4
+:nvidia-helm-url: https://helm.ngc.nvidia.com/nvidia
+:nvidia-gitlab-url: https://gitlab.com/nvidia
+:nvidia-gitlab-drv-url: {nvidia-gitlab-url}/container-images/driver/
+:nvidia-gitlab-drv-dir: sle{sles-version}
+//:comp1-provider: SUSE
+//:comp1: component 1 short name
+//:comp1-full: component 1 long name
+//:comp1-version1: component 1 version
+//:comp1-website: component 1 product website URL
+//:comp1-docs: component 1 product documentation URL
+//:comp2-provider: component 2 provider name
+//:comp2: component 2 short name
+//:comp2-full: component 2 full name
+//:comp2-version: component 2 relevant versions
+//:comp2-website: component  product website URL
+//:comp2-docs: component 2 product documentation URL
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT TITLE AND SUBTITLE
+//   Provide concise but descriptive title and subtitle.
+//   title - (<75 characters) concisely identify the guide.
+//           (e.g.: "Kubeflow with Rancher")
+//   subititle - (<75 characters) expound on the title.
+//               (e.g., "Deploying Kubeflow onto an RKE2 Cluster with Rancher")
+// -
+:title: {nvidia-drv} and {nvidia-op} with SUSE
+:subtitle: Enabling container workloads with {nvidia-org} GPU resources
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// DOCUMENT DESCRIPTIONS
+//   Describe the guide by its purpose, use case, value.
+//
+// usecase: (<55 characters) key words or phrases that identify the
+//          use case of this guide
+//          (e.g.: "Database-as-a-Service", "edge analytics in healthcare",
+//                 "Kubernetes-native object storage")
+// description: (<150 characters) brief description of what this guide
+//              provides (e.g.: "Deploy Kubeflow with Rancher Primer")
+// description-social: (<55 characters) condensed description suitable for
+//                     social media (e.g.: "Kubeflow with Rancher")
+// executive-summary: (<300 characters) brief summary of the guide that
+//                    appears near the beginning of the rendered document
+//                    (e.g.: "Kubeflow simplifies deployment of machine
+//                            learning (ML) workflows on Kubernetes clusters.
+//                            This document provides step-by-step guidance
+//                            for deploying Kubeflow on an RKE2 cluster with
+//                            Rancher."
+//
+// -
+:usecase: enable GPU acceleration for containerized workloads
+
+:description: Deploy {nvidia-op} with {sles-full} and {rke2-full} for {k8s} worker nodes installed with the {nvidia-drv}.
+
+:description-social: GPU-enabled {k8s} clusters with SUSE
+
+:executive-summary: Install the {nvidia-drv} deploy the {nvidia-op} to {rke2-full} clusters, managed by {rancher}.
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Tasks
+//   Identify the tasks detailed or outlined in the guide.
+//
+//   Tasks are used to for filtering documents in the
+//     SUSE Documentation portal.
+//
+//   A task must be one of these supported values:
+//    Administration, Artificial Intelligence, Auditing, Authentication,
+//    Automation, Backup &amp; Recovery, Certification, Cloud,
+//    Clustering, Compliance, Configuration, Containerization,
+//    Container Management, Data Intelligence, Deployment, Design,
+//    Encryption, High Availability, Image Building, Implementation,
+//    Installation, Integration, Maintenance, Migration, Monitoring,
+//    Packaging, Security, Storage, Subscription Management,
+//    Troubleshooting, Upgrade &amp; Update, Virtualization,
+//    Vulnerability, Web
+//
+//  E.g.,
+//    :metatask1: Configuration
+//    :metatask2: Installation
+//    :metatask3: Deployment
+// -
+:metatask1: task
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// CONTRIBUTORS
+//   Specify information about authors, editors, and other
+//   contributors here.
+//   Follow the pattern to provide fist name, surname, job title,
+//   and organization name for each contributor.
+//   NOTE: To list additional authors or others on the cover page,
+//         you must edit the docinfo.xml file as well.
+// -
+:author1-firstname: Alex
+:author1-surname: Arnoldy
+:author1-jobtitle: Global Alliance Solutions Architect
+:author1-orgname: SUSE
+//:contrib1_firstname: Rhys
+//:contrib1_surname: Oxenham
+//:contrib1_jobtitle: Senior Director of Field PM & Engineering - Edge
+//:contrib1_orgname: SUSE
+:contrib2-firstname: Alex
+:contrib2-surname: Zacharow
+:contrib2-jobtitle: Solution Engineer - SW Engineering(Systems)
+:contrib2-orgname: SUSE
+:editor1-firstname: Terry
+:editor1-surname: Smith
+:editor1-jobtitle: Global Alliance Solutions Director
+:editor1-orgname: SUSE
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// MISCELLANEOUS
+//   Define any additional variables here for use within the document.
+// -
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
