@@ -40,14 +40,14 @@ include::./gs_rancher-rke2-nvidia-gpu-operator-vars.adoc[]
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 Graphics Processing Units (GPUs) provide unique capabilities for accelerating a broad spectrum of workloads, such as artificial intelligence and machine learning, scientific and engineering simulations, and many more.
-Developing and deploying these workloads in containers on {k8s} clusters offers potential for improved portability, scale, and efficiency.
+Developing and deploying these workloads in containers on Kubernetes clusters offers potential for improved portability, scale, and efficiency.
 However, GPU resources are not automatically visible or accessible to workloads running in containers.
 
 In this guide, you learn how to:
 
- * install the {nvidia-drv} on each {rke2-full} worker node
+* install the {nvidia-drv} on each worker node of the {rke2-full} cluster
 
- * deploy the {nvidia-op} {helm-org} chart on {rke2-full}
+* use a {helm-org} chart to deploy the {nvidia-op} to the {rke2-full} cluster
 
 
 === Scope
@@ -62,9 +62,9 @@ This guide covers the following:
 
 * finding and installing the appropriate {nvidia-drv} for the {nvidia-org} GPU installed on the {rke2} cluster
 
-* finding and deploying the appropriate version of the {nvidia-op} {helm-org} chart
+* finding and deploying the appropriate version of the {nvidia-op}
 
-* Verifying the functionality of the {nvidia-op} software and the {nvidia-drv}
+* verifying the functionality of the {nvidia-op} and the {nvidia-drv}
 
 
 === Audience
@@ -77,9 +77,9 @@ This guide covers the following:
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
-This guide is intended for high technology professionals (including {k8s} administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
+This guide is intended for high technology professionals (including Kubernetes administrators, proficient DevOps practitioners, and application developers) seeking to unlock the full potential of their GPU-accelerated containerized applications.
 
-To be successful, you need a foundational understanding of Linux, {k8s}, and {nvidia-org} GPU technologies.
+To be successful, you need a foundational understanding of Linux, Kubernetes, and {nvidia-org} GPU technologies.
 
 
 
@@ -97,7 +97,6 @@ To be successful, you need a foundational understanding of Linux, {k8s}, and {nv
 
 The author wants to acknowledge contributions to this guide by:
 
-* {author1-firstname} {author1-surname}, {author1-orgname}, {author1-jobtitle}
 * {contrib2-firstname} {contrib2-surname}, {contrib2-orgname}, {contrib2-jobtitle}
 * {editor1-firstname} {editor1-surname}, {editor1-orgname}, {editor1-jobtitle}
 
@@ -118,38 +117,34 @@ The author wants to acknowledge contributions to this guide by:
 
 Before you embark on the procedures outlined in this guide, ensure that your environment is ready with the resources listed here.
 
-. {sles-full} modules
+. {sles-full}
 //
 +
-Modules and extenions provide additional functionality to your {sles-full} system.
+{sles-full} is the open, secure, and compliant enterprise Linux operating system to future-proof business-critical workloads.
 //
 +
-. Required tools
+This guide was validated with *{sles-full} {sles-version} SP{sles-sp}* as the operating system of the Kubernetes worker nodes.
 //
 +
-* If needed, as the root user, install the sudo command: 
+You will need to install a few tools to help with installation of the {nvidia-drv}.
++
+[NOTE]
+====
+Running certain commands requires root privileges.
+However, for security reasons and to avoid mistakes, it is not recommended to log in as root.
+A safer approach is to log in as a regular user, and then use `sudo` to run commands with elevated privileges.
+See https://documentation.suse.com/sles/15-SP6/single-html/SLES-administration/#cha-adm-sudo[sudo basics] in the SUSE Linux Enterprise Server Administration Guide.
+====
+
+.. To install the {nvidia-drv}, first install `pciutils` and `wget`.
 //
 +
-[source, console, subs="attributes+"]
-----
-zypper install sudo
-----
-//
-+
-* Install tools that will be needed to install the {nvidia-drv}: 
-//
-+
-[source, console, subs="attributes+"]
+[source, console]
 ----
 sudo zypper install pciutils wget 
 ----
-//[source, console, subs="attributes+"]
-//----
-//sudo zypper install pciutils wget kernel-devel gcc make
-//----
-//
-+
-Enable the Desktop Applications, Development Tools, and {nvidia-org} Compute {sles-docs-modules}[modules]:
+
+.. Enable the Desktop Applications, Development Tools, and {nvidia-org} Compute {sles-docs-modules}[modules]:
 +
 [source, console, subs="attributes+"]
 ----
@@ -159,16 +154,12 @@ sudo SUSEConnect -p sle-module-desktop-applications/$\{VER\}.$\{SP\}/x86_64
 sudo SUSEConnect -p sle-module-development-tools/$\{VER\}.$\{SP\}/x86_64
 sudo SUSEConnect -p sle-module-NVIDIA-compute/$\{VER\}/x86_64
 ----
-+
-[NOTE]
-====
-This procedure has been validated with {sles-full} {sles-version} SP{sles-sp}.
-====
-+
+
+
 . {rke2-full} ({rke2})
 //
 +
-{rke2-docs}[{rke2}] is the security focused {k8s} distribution developed by SUSE.
+{rke2-docs}[{rke2}] is the security focused Kubernetes distribution developed by SUSE.
 +
 Ensure your worker nodes are part of an {rke2} cluster.
 You can {rke2-docs}install/quickstart[deploy] {rke2} on worker nodes manually or use {rancher-docs-rke2}[Rancher by SUSE] to create and configure the cluster.
@@ -180,17 +171,17 @@ Your {rke2} cluster should be under the management of {rancher-full} to allow fo
 //
 +
 {rancher} provides a shell interface through the management web interface that includes tools like kubectl and {helm-org}. 
-This comes in the form of a non-persistent container running on the {rancher} {k8s} cluster. 
+This comes in the form of a non-persistent container running on the {rancher} Kubernetes cluster.
 This approach provides numerous security advantages. 
 Users must first authenticate through {rancher-full} before they can view or manage downstream clusters. 
 This is more secure than providing users with kubeconfig files that don't require authentication and could get checked into a version control system or otherwise end up in the wrong hands.
 In addition, any sensitive data saved in the shell session will be deleted when the container exits.
 //
 +
-* {rke2-full} {k8s} cluster
+* {rke2-full} cluster
 //
 +
-Your {rke2} {k8s} cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
+Your {rke2} Kubernetes cluster must have worker nodes that are equipped and configured with {nvidia-dc-url}[Data Center class {nvidia-org} GPUs].
 
 
 == Install the {nvidia-drv} on each GPU equipped worker node
@@ -296,21 +287,21 @@ You should see the `nvidia`, `nvidia_drm`, `nvidia_modeset`, and `nvidia_uvm` ke
 sudo nvidia-smi
 ----
 
-== Deploying the {nvidia-op} to an {rke2} {k8s} cluster
+== Deploying the {nvidia-op} to an {rke2} cluster
 
 The remainder of this process will be completed through the {rancher} UI. 
-Leveraging the {rancher} UI is more secure than managing {k8s} clusters from a workstation.
+Leveraging the {rancher} UI is more secure than managing Kubernetes clusters from a workstation.
 Working through the {rancher} UI ensures all administrative actions are performed through an authenticated session.
 In addition, no sensitive data, such as a kubeconfig file, can fall into the wrong hands.
 
-{k8s} provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
+Kubernetes provides access to special hardware, such as GPUs, network adapters, and other devices through the {kubernetes-docs}concepts/extend-kubernetes/compute-storage-net/device-plugins/[device plugin framework].
 Configuring and managing these resources involves multiple software components, including drivers, libraries, and container runtimes.
 This can be difficult and prone to error.
-The {nvidia-op} helps overcome these difficulties using the {k8s} operator framework to automate management of {nvidia-org} software components.
+The {nvidia-op} helps overcome these difficulties using the Kubernetes operator framework to automate management of {nvidia-org} software components.
 
-The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] {k8s} package manager.
+The preferred method for installing the {nvidia-op} is with the {helm-docs}[Helm] Kubernetes package manager.
 Using {rancher-full} to manage your {rke2} cluster allows you to more easily manage the cluster, including using Kubectl and {helm-org} without having to download the kubeconfig file for the cluster or install extra software on an external workstation.
-In addition, managing {k8s} clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
+In addition, managing Kubernetes clusters exclusively through {rancher} ensure all administrative actions are allowed only after proper user authentication, rather than allowing unauthenticated access to anyone possessing a kubeconfig file.
 
 . Log in to your {rancher} server.
 +
@@ -451,7 +442,7 @@ In this guide, you learned how to:
 
 The strategic choice of {sles-full} as the foundation for this design underscores a commitment to security and supportability.
 Organizations with exacting security requirements depend on the numerous certifications of {sles-full}, including Common Criteria, FIPS, and EAL.
-This is enhanced with the choice of a security focused {k8s} distribution, such as {rke2-full}.
+This is enhanced with the choice of a security focused Kubernetes distribution, such as {rke2-full}.
 With SUSE's commitment to providing robust support for heterogeneous software stacks, customers can design their IT landscapes to suit their unique challenges without compromising on security, capability, or performance.
 
 

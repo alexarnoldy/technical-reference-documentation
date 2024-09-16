@@ -157,6 +157,8 @@
 :sles-url: https://www.suse.com/products/server/
 :sles-docs: https://documentation.suse.com/sles/{sles-version}-{sles-sp-full}/
 :sles-docs-modules: {sles-docs}single-html/SLES-modules/#sec-modules-install
+:sles-docs-sudo: {sles-docs}single-html/SLES-administration/#cha-adm-sudo
+
 
 :rancher: SUSE Rancher
 :rancher-full: SUSE Rancher Prime
@@ -176,7 +178,6 @@
 :helm-docs: https://helm.sh/docs/
 :helm-org: Helm
 :kubernetes-docs: https://kubernetes.io/docs/
-:k8s: Kubernetes
 
 :nvidia-org: NVIDIA
 :nvidia-url: https://nvidia.com
@@ -248,11 +249,11 @@
 // -
 :usecase: enable GPU acceleration for containerized workloads
 
-:description: Deploy {nvidia-op} with {sles-full} and {rke2-full} for {k8s} worker nodes installed with the {nvidia-drv}.
+:description: Deploy {nvidia-op} with {sles-full} and {rke2-full} for Kubernetes worker nodes installed with the {nvidia-drv}.
 
-:description-social: GPU-enabled {k8s} clusters with SUSE
+:description-social: GPU-enabled Kubernetes clusters with SUSE
 
-:executive-summary: Install the {nvidia-drv} deploy the {nvidia-op} to {rke2-full} clusters, managed by {rancher}.
+:executive-summary: Enable {nvidia-org} GPU resources for containerized workloads on SUSE {rke2-full} ({rke2}) clusters.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -305,11 +306,11 @@
 //:contrib1_orgname: SUSE
 :contrib2-firstname: Alex
 :contrib2-surname: Zacharow
-:contrib2-jobtitle: Solution Engineer - SW Engineering(Systems)
+:contrib2-jobtitle: Solution Engineer, Software Systems Engineering
 :contrib2-orgname: SUSE
 :editor1-firstname: Terry
 :editor1-surname: Smith
-:editor1-jobtitle: Global Alliance Solutions Director
+:editor1-jobtitle: Director, Global Alliance Solutions
 :editor1-orgname: SUSE
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
